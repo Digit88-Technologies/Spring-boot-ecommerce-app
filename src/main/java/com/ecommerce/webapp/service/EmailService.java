@@ -3,11 +3,16 @@ package com.ecommerce.webapp.service;
 import com.ecommerce.webapp.exception.EmailFailureException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.VerificationToken;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * Service for handling emails being sent.
@@ -44,14 +49,40 @@ public class EmailService {
    * @param verificationToken The verification token to be sent.
    * @throws EmailFailureException Thrown if are unable to send the email.
    */
-  public void sendVerificationEmail(VerificationToken verificationToken) throws EmailFailureException {
-    SimpleMailMessage message = makeMailMessage();
-    message.setTo(verificationToken.getUser().getEmail());
-    message.setSubject("Verify your email to active your account.");
-    message.setText("Please follow the link below to verify your email to active your account.\n" +
-        url + "/auth/verify?token=" + verificationToken.getToken());
+  public void sendVerificationEmail(VerificationToken verificationToken) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
+//    SimpleMailMessage message = makeMailMessage();
+//    message.setTo(verificationToken.getUser().getEmail());
+//    message.setSubject("Verify your email to active your account.");
+//    message.setText("Please follow the link below to verify your email to active your account.\n" +
+//        url + "/auth/verify?token=" + verificationToken.getToken());
+
+    String toAddress = verificationToken.getUser().getEmail();
+    String fromTheAddress = fromAddress;
+    String senderName = "E-Commerce Shop";
+    String subject = "Please verify your registration";
+    String content = "Dear [[name]],<br>"
+            + "Please click the link below to verify your registration:<br>"
+            + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
+            + "Thank you,<br>"
+            + "E-Commerce Shop";
+
+    MimeMessage message = javaMailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message);
+
+    helper.setFrom(fromTheAddress, senderName);
+    helper.setTo(toAddress);
+    helper.setSubject(subject);
+
+    content = content.replace("[[name]]", verificationToken.getUser().getUsername());
+    String verifyURL = url + "/auth/verify?token=" + verificationToken.getToken();
+
+    content = content.replace("[[URL]]", verifyURL);
+
+    helper.setText(content, true);
+
     try {
       javaMailSender.send(message);
+      System.out.println("Email has been sent");
     } catch (MailException ex) {
       throw new EmailFailureException();
     }
@@ -63,13 +94,37 @@ public class EmailService {
    * @param token The token to send the user for reset.
    * @throws EmailFailureException
    */
-  public void sendPasswordResetEmail(LocalUser user, String token) throws EmailFailureException {
-    SimpleMailMessage message = makeMailMessage();
-    message.setTo(user.getEmail());
-    message.setSubject("Your password reset request link.");
-    message.setText("You requested a password reset on our website. Please " +
-        "find the link below to be able to reset your password.\n" + url +
-        "/auth/reset?token=" + token);
+  public void sendPasswordResetEmail(LocalUser user, String token) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
+//    SimpleMailMessage message = makeMailMessage();
+//    message.setTo(user.getEmail());
+//    message.setSubject("Your password reset request link.");
+//    message.setText("You requested a password reset on our website. Please " +
+//        "find the link below to be able to reset your password.\n" + url +
+//        "/auth/reset?token=" + token);
+
+    String toAddress = user.getEmail();
+    String fromTheAddress = fromAddress;
+    String senderName = "E-Commerce Shop";
+    String subject = "Your password reset request link.";
+    String content = "Dear [[name]],<br>"
+            + "Please click the link below to reset your password:<br>"
+            + "<h3><a href=\"[[URL]]\" target=\"_self\">VERIFY</a></h3>"
+            + "Thank you,<br>"
+            + "E-Commerce Shop";
+
+    MimeMessage message = javaMailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message);
+
+    helper.setFrom(fromTheAddress, senderName);
+    helper.setTo(toAddress);
+    helper.setSubject(subject);
+
+    content = content.replace("[[name]]", user.getUsername());
+    String verifyURL = url + "/auth/reset?token=" + token;
+
+    content = content.replace("[[URL]]", verifyURL);
+
+    helper.setText(content, true);
     try {
       javaMailSender.send(message);
     } catch (MailException ex) {

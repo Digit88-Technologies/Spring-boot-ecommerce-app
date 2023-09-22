@@ -1,20 +1,19 @@
 package com.ecommerce.webapp.api.controller.auth;
 
-import com.ecommerce.webapp.api.model.LoginBody;
-import com.ecommerce.webapp.api.model.LoginResponse;
-import com.ecommerce.webapp.api.model.PasswordResetBody;
-import com.ecommerce.webapp.api.model.RegistrationBody;
+import com.ecommerce.webapp.api.model.*;
 import com.ecommerce.webapp.exception.EmailFailureException;
 import com.ecommerce.webapp.exception.EmailNotFoundException;
 import com.ecommerce.webapp.exception.UserAlreadyExistsException;
 import com.ecommerce.webapp.exception.UserNotVerifiedException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.service.UserService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.io.UnsupportedEncodingException;
 
 
 @RestController
@@ -41,6 +40,10 @@ public class AuthenticationController {
       return ResponseEntity.status(HttpStatus.CONFLICT).build();
     } catch (EmailFailureException e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (MessagingException e) {
+        throw new RuntimeException(e);
+    } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
     }
   }
 
@@ -65,8 +68,12 @@ public class AuthenticationController {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     } catch (EmailFailureException ex) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (MessagingException e) {
+        throw new RuntimeException(e);
+    } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
     }
-    if (jwt == null) {
+      if (jwt == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     } else {
       LoginResponse response = new LoginResponse();
@@ -115,6 +122,10 @@ public class AuthenticationController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     } catch (EmailFailureException e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    } catch (MessagingException e) {
+        throw new RuntimeException(e);
+    } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException(e);
     }
   }
 
@@ -127,6 +138,19 @@ public class AuthenticationController {
   public ResponseEntity resetPassword(@Valid @RequestBody PasswordResetBody body) {
     userService.resetPassword(body);
     return ResponseEntity.ok().build();
+  }
+
+
+
+  @PostMapping("/sendOTP")
+  public ResponseEntity sendOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+    System.out.println("sendOTP Request: " + dto.toString());
+    return ResponseEntity.ok().body(userService.sendOTPForPasswordReset(dto));
+  }
+
+  @PostMapping("/validateOTP")
+  public ResponseEntity validateOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+    return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));
   }
 
 }

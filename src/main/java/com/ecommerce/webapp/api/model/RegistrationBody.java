@@ -24,6 +24,20 @@ public class RegistrationBody {
   @NotBlank
   private String lastName;
 
+  //For OTP Verification
+  @NotNull
+  @NotBlank
+  @Pattern(regexp = "^\\+\\d{1,3}\\s\\d{10}$", message = "Invalid phone number format")
+  private String phoneNumber;
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
+
   public String getUsername() {
     return username;
   }

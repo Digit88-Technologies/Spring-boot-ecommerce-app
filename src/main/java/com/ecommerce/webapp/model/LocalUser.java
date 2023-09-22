@@ -2,6 +2,7 @@ package com.ecommerce.webapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -31,6 +32,10 @@ public class LocalUser implements UserDetails {
   private String firstName;
   @Column(name = "last_name", nullable = false)
   private String lastName;
+
+  @Getter
+  @Column(name = "phone_number", nullable = false)
+  private String phoneNumber;
   @JsonIgnore
   @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private List<Address> addresses = new ArrayList<>();
@@ -41,6 +46,8 @@ public class LocalUser implements UserDetails {
   @Column(name = "email_verified", nullable = false)
   private Boolean emailVerified = false;
 
+  @Column(name = "phone_number_verified", nullable = false)
+  private Boolean phoneNumberVerified = false;
 
   public Boolean isEmailVerified() {
     return emailVerified;
@@ -50,6 +57,16 @@ public class LocalUser implements UserDetails {
   public void setEmailVerified(Boolean emailVerified) {
     this.emailVerified = emailVerified;
   }
+
+  public Boolean isPhoneNumberVerified() {
+    return phoneNumberVerified;
+  }
+
+
+  public void setPhoneNumberVerified(Boolean phoneNumberVerified) {
+    this.phoneNumberVerified = phoneNumberVerified;
+  }
+
 
 
   public List<VerificationToken> getVerificationTokens() {
@@ -61,6 +78,9 @@ public class LocalUser implements UserDetails {
     this.verificationTokens = verificationTokens;
   }
 
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
+  }
 
   public List<Address> getAddresses() {
     return addresses;
