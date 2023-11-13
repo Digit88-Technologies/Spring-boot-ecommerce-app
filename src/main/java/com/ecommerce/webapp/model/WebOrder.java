@@ -19,10 +19,11 @@ public class WebOrder {
   @ManyToOne(optional = false)
   @JoinColumn(name = "user_id", nullable = false)
   private LocalUser user;
+
   @ManyToOne(optional = false)
   @JoinColumn(name = "address_id", nullable = false)
   private Address address;
-  @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<WebOrderQuantities> quantities = new ArrayList<>();
 
 
@@ -64,5 +65,6 @@ public class WebOrder {
   public void setId(Long id) {
     this.id = id;
   }
+
 
 }

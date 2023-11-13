@@ -1,6 +1,9 @@
 package com.ecommerce.webapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 /**
  * A product available for purchasing.
@@ -24,11 +27,22 @@ public class Product {
   @OneToOne(mappedBy = "product", cascade = CascadeType.REMOVE, optional = false, orphanRemoval = true)
   private Inventory inventory;
 
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private ProductCategory category;
+
+
+  public ProductCategory getCategory() {
+    return category;
+  }
+
+  public void setCategory(ProductCategory category) {
+    this.category = category;
+  }
 
   public Inventory getInventory() {
     return inventory;
   }
-
 
   public void setInventory(Inventory inventory) {
     this.inventory = inventory;

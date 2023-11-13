@@ -22,6 +22,8 @@ public class Inventory {
   private Integer quantity;
 
 
+
+
   public Integer getQuantity() {
     return quantity;
   }

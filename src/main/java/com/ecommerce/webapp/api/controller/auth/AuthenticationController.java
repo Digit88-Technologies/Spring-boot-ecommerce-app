@@ -1,11 +1,9 @@
 package com.ecommerce.webapp.api.controller.auth;
 
 import com.ecommerce.webapp.api.model.*;
-import com.ecommerce.webapp.exception.EmailFailureException;
-import com.ecommerce.webapp.exception.EmailNotFoundException;
-import com.ecommerce.webapp.exception.UserAlreadyExistsException;
-import com.ecommerce.webapp.exception.UserNotVerifiedException;
+import com.ecommerce.webapp.exception.*;
 import com.ecommerce.webapp.model.LocalUser;
+import com.ecommerce.webapp.service.EmailService;
 import com.ecommerce.webapp.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -14,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.io.UnsupportedEncodingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
@@ -22,135 +23,117 @@ public class AuthenticationController {
 
   private UserService userService;
 
+  private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
   public AuthenticationController(UserService userService) {
     this.userService = userService;
   }
 
-  /**
-   * Post Mapping to handle registering users.
-   * @param registrationBody The registration information.
-   * @return Response to front end.
-   */
   @PostMapping("/register")
-  public ResponseEntity registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
+  public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
     try {
       userService.registerUser(registrationBody);
+      logger.info("User registration is under process: {}", registrationBody.getUsername());
       return ResponseEntity.ok().build();
     } catch (UserAlreadyExistsException ex) {
+      logger.warn("User registration failed due to existing user: {}", registrationBody.getUsername());
       return ResponseEntity.status(HttpStatus.CONFLICT).build();
     } catch (EmailFailureException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    } catch (MessagingException e) {
-        throw new RuntimeException(e);
-    } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
+      EmailFailureException.handleException("Error sending registration email", registrationBody.getUsername(), e);
+    } catch (Exception e) {
+      new UnexpectedException("Unexpected error during user registration", registrationBody.getUsername(), e);
     }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
-  /**
-   * Post Mapping to handle user logins to provide authentication token.
-   * @param loginBody The login information.
-   * @return The authentication token if successful.
-   */
   @PostMapping("/login")
   public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody) {
-    String jwt = null;
     try {
-      jwt = userService.loginUser(loginBody);
-    } catch (UserNotVerifiedException ex) {
-      LoginResponse response = new LoginResponse();
-      response.setSuccess(false);
-      String reason = "USER_NOT_VERIFIED";
-      if (ex.isNewEmailSent()) {
-        reason += "_EMAIL_RESENT";
-      }
-      response.setFailureReason(reason);
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-    } catch (EmailFailureException ex) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    } catch (MessagingException e) {
-        throw new RuntimeException(e);
-    } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
-    }
+      String jwt = userService.loginUser(loginBody);
       if (jwt == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    } else {
-      LoginResponse response = new LoginResponse();
-      response.setJwt(jwt);
-      response.setSuccess(true);
-      return ResponseEntity.ok(response);
+        logger.warn("User login failed: {}", loginBody.getUsername());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+      } else {
+        logger.info("User login successful: {}", loginBody.getUsername());
+        LoginResponse response = new LoginResponse();
+        response.setJwt(jwt);
+        response.setSuccess(true);
+        return ResponseEntity.ok(response);
+      }
+    } catch (UserNotVerifiedException ex) {
+      UserNotVerifiedException.handleUserNotVerifiedException("User login failed due to unverified account", loginBody.getUsername(), ex);
+    } catch (EmailFailureException ex) {
+      EmailFailureException.handleException("Error sending login email", loginBody.getUsername(), ex);
+    } catch (Exception e) {
+      UnexpectedException.handleUnexpectedException("Unexpected error during user login", loginBody.getUsername(), e);
     }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
-  /**
-   * Post mapping to verify the email of an account using the emailed token.
-   * @param token The token emailed for verification. This is not the same as a
-   *              authentication JWT.
-   * @return 200 if successful. 409 if failure.
-   */
   @PostMapping("/verify")
-  public ResponseEntity verifyEmail(@RequestParam String token) {
-    if (userService.verifyUser(token)) {
-      return ResponseEntity.ok().build();
-    } else {
-      return ResponseEntity.status(HttpStatus.CONFLICT).build();
+  public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+    try {
+      if (userService.verifyUser(token)) {
+        return ResponseEntity.ok().build();
+      } else {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+      }
+    } catch (Exception e) {
+      UnexpectedException.handleUnexpectedException("Error during email verification", "", e);
     }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
-  /**
-   * Gets the profile of the currently logged-in user and returns it.
-   * @param user The authentication principal object.
-   * @return The user profile.
-   */
   @GetMapping("/me")
   public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
     return user;
   }
 
-  /**
-   * Sends an email to the user with a link to reset their password.
-   * @param email The email to reset.
-   * @return Ok if sent, bad request if email not found.
-   */
   @PostMapping("/forgot")
-  public ResponseEntity forgotPassword(@RequestParam String email) {
+  public ResponseEntity<?> forgotPassword(@RequestParam String email) {
     try {
       userService.forgotPassword(email);
       return ResponseEntity.ok().build();
     } catch (EmailNotFoundException ex) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    } catch (EmailFailureException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    } catch (MessagingException e) {
-        throw new RuntimeException(e);
-    } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
+    } catch (EmailFailureException | MessagingException | UnsupportedEncodingException e) {
+      UnexpectedException.handleUnexpectedException("Error during password reset", email, e);
     }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
-  /**
-   * Resets the users password with the given token and password.
-   * @param body The information for the password reset.
-   * @return Okay if password was set.
-   */
   @PostMapping("/reset")
-  public ResponseEntity resetPassword(@Valid @RequestBody PasswordResetBody body) {
-    userService.resetPassword(body);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetBody body) {
+    try {
+      userService.resetPassword(body);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      UnexpectedException.handleUnexpectedException("Error during password reset", null , e);
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
-
-
 
   @PostMapping("/sendOTP")
-  public ResponseEntity sendOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
-    System.out.println("sendOTP Request: " + dto.toString());
-    return ResponseEntity.ok().body(userService.sendOTPForPasswordReset(dto));
+  public ResponseEntity<?> sendOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+    try {
+      logger.info("sendOTP Request: {}", dto.toString());
+      return ResponseEntity.ok().body(userService.sendOTPForPasswordReset(dto));
+    } catch (Exception e) {
+      UnexpectedException.handleUnexpectedException("Error during OTP generation", dto.getUserName(), e);
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
   @PostMapping("/validateOTP")
-  public ResponseEntity validateOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
-    return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));
+  public ResponseEntity<?> validateOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+    try {
+      logger.info("Validating OTP for user: {}", dto.getUserName());
+      return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));
+    } catch (Exception e) {
+      UnexpectedException.handleUnexpectedException("Error during OTP validation", dto.getUserName(), e);
+    }
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
   }
 
 }
+

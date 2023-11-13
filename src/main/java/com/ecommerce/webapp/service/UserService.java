@@ -15,6 +15,8 @@ import com.twilio.type.PhoneNumber;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -68,7 +70,10 @@ public class UserService {
     user.setPassword(encryptionService.encryptPassword(registrationBody.getPassword()));
     user.setPhoneNumber(registrationBody.getPhoneNumber());
     VerificationToken verificationToken = createVerificationToken(user);
+
+    //Sending the registration email to the local user for verification
     emailService.sendVerificationEmail(verificationToken);
+
     //Sending OTP for verification
     MobileRegistrationRequestDto mobileRegistrationRequestDto = new MobileRegistrationRequestDto();
     mobileRegistrationRequestDto.setUserName(user.getUsername());
@@ -135,7 +140,7 @@ public class UserService {
    * @return True if it was verified, false if already verified or token invalid.
    */
   @Transactional
-  public boolean verifyUser(String token) {
+  public boolean verifyUser(String token) throws MessagingException, EmailFailureException, UnsupportedEncodingException {
     Optional<VerificationToken> opToken = verificationTokenDAO.findByToken(token);
     if (opToken.isPresent()) {
       VerificationToken verificationToken = opToken.get();
@@ -144,6 +149,11 @@ public class UserService {
         user.setEmailVerified(true);
         localUserDAO.save(user);
         verificationTokenDAO.deleteByUser(user);
+
+        VerificationToken verificationTokenForEmail = createVerificationToken(user);
+
+        //Sending the registration email to the local user for verification
+        emailService.sendWelcomeEmail(verificationTokenForEmail);
         return true;
       }
     }
@@ -225,11 +235,11 @@ public class UserService {
       return "Valid OTP please proceed with your transaction !";
 
     } else {
-      return String.valueOf(new IllegalArgumentException("Invalid otp please retry !"));
+      return "Invalid user / otp. Please check user / otp and retry !";
     }
   }
 
-  //6 digit otp
+
   private String generateOTP() {
     return new DecimalFormat("000000")
             .format(new Random().nextInt(999999));

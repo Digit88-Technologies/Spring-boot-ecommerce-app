@@ -22,6 +22,15 @@ public class Es_products {
         this.id = id;
     }
 
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -48,6 +57,9 @@ public class Es_products {
 
     @Id
     private String id;
+
+    @Field(type = FieldType.Text, name = "category")
+    private String category;
 
     @Field(type = FieldType.Text, name = "name")
     private String name;

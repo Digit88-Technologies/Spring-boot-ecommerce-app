@@ -82,3 +82,22 @@ public class ElasticSearchQuery {
         return products;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

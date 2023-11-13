@@ -84,7 +84,37 @@ public class EmailService {
       javaMailSender.send(message);
       System.out.println("Email has been sent");
     } catch (MailException ex) {
-      throw new EmailFailureException();
+      EmailFailureException.handleException("Error sending registration email", verificationToken.getUser().getUsername(), ex);
+    }
+  }
+
+  public void sendWelcomeEmail(VerificationToken verificationToken) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
+
+    String toAddress = verificationToken.getUser().getEmail();
+    String fromTheAddress = fromAddress;
+    String senderName = "E-Commerce Shop";
+    String subject = "Congratulations and welcome aboard!";
+    String content = "Dear [[name]],<br>"
+            + " Thank you for joining E-Commerce Shop. We'd like to confirm that your account was created successfully. you can continue to access our portal.<br>"
+            + "Thank you,<br>"
+            + "E-Commerce Shop";
+
+    MimeMessage message = javaMailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message);
+
+    helper.setFrom(fromTheAddress, senderName);
+    helper.setTo(toAddress);
+    helper.setSubject(subject);
+
+    content = content.replace("[[name]]", verificationToken.getUser().getUsername());
+
+    helper.setText(content, true);
+
+    try {
+      javaMailSender.send(message);
+      System.out.println("Email has been sent out for successful registration");
+    } catch (MailException ex) {
+      EmailFailureException.handleException("Error sending welcome email", verificationToken.getUser().getUsername(), ex);
     }
   }
 
@@ -128,7 +158,7 @@ public class EmailService {
     try {
       javaMailSender.send(message);
     } catch (MailException ex) {
-      throw new EmailFailureException();
+      EmailFailureException.handleException("Error sending password reset email", user.getUsername(), ex);
     }
   }
 
