@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MobileRegistrationResponseDto {
+public class MobileOTPResponseDto {
 
 
     private OtpStatus status;

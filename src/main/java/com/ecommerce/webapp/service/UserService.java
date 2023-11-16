@@ -75,10 +75,10 @@ public class UserService {
     emailService.sendVerificationEmail(verificationToken);
 
     //Sending OTP for verification
-    MobileRegistrationRequestDto mobileRegistrationRequestDto = new MobileRegistrationRequestDto();
+    MobileOTPRequestDto mobileRegistrationRequestDto = new MobileOTPRequestDto();
     mobileRegistrationRequestDto.setUserName(user.getUsername());
     mobileRegistrationRequestDto.setPhoneNumber(user.getPhoneNumber());
-    sendOTPForPasswordReset(mobileRegistrationRequestDto);
+    sendOTPToContactNumber(mobileRegistrationRequestDto);
 
     return localUserDAO.save(user);
   }
@@ -107,7 +107,8 @@ public class UserService {
     if (opUser.isPresent()) {
       System.out.println("Login user :  " + opUser.get());
       LocalUser user = opUser.get();
-      if (encryptionService.verifyPassword(loginBody.getPassword(), user.getPassword())) {
+      if ((loginBody.getPassword() != null && encryptionService.verifyPassword(loginBody.getPassword(), user.getPassword())) ||
+              (loginBody.getMobileOtp() != null && validateLoginOTP(loginBody.getMobileOtp(), user.getUsername())))      {
         if (user.isEmailVerified() && user.isPhoneNumberVerified()) {
           return jwtService.generateJWT(user);
         } else if (!user.isEmailVerified()){
@@ -123,10 +124,10 @@ public class UserService {
         } else {
 
           //Re-sending OTP for pending verification
-          MobileRegistrationRequestDto mobileRegistrationRequestDto = new MobileRegistrationRequestDto();
+          MobileOTPRequestDto mobileRegistrationRequestDto = new MobileOTPRequestDto();
           mobileRegistrationRequestDto.setUserName(user.getUsername());
           mobileRegistrationRequestDto.setPhoneNumber(user.getPhoneNumber());
-          sendOTPForPasswordReset(mobileRegistrationRequestDto);
+          sendOTPToContactNumber(mobileRegistrationRequestDto);
 
         }
       }
@@ -201,9 +202,9 @@ public class UserService {
     return user.getId() == id;
   }
 
-  public MobileRegistrationResponseDto sendOTPForPasswordReset(MobileRegistrationRequestDto mobileRegistrationRequestDto) {
+  public MobileOTPResponseDto sendOTPToContactNumber(MobileOTPRequestDto mobileRegistrationRequestDto) {
 
-    MobileRegistrationResponseDto mobileRegistrationResponseDto = null;
+    MobileOTPResponseDto mobileRegistrationResponseDto = null;
     try {
       PhoneNumber to = new PhoneNumber(mobileRegistrationRequestDto.getPhoneNumber());
       PhoneNumber from = new PhoneNumber(twilioConfig.getTrialNumber());
@@ -214,13 +215,20 @@ public class UserService {
                       otpMessage)
               .create();
       otpMap.put(mobileRegistrationRequestDto.getUserName(), otp);
-      mobileRegistrationResponseDto = new MobileRegistrationResponseDto(OtpStatus.DELIVERED, otpMessage);
+      mobileRegistrationResponseDto = new MobileOTPResponseDto(OtpStatus.DELIVERED, otpMessage);
     } catch (Exception ex) {
-      mobileRegistrationResponseDto = new MobileRegistrationResponseDto(OtpStatus.FAILED, ex.getMessage());
+      mobileRegistrationResponseDto = new MobileOTPResponseDto(OtpStatus.FAILED, ex.getMessage());
     }
     return mobileRegistrationResponseDto;
   }
 
+  /**
+   * Validates the provided OTP against the stored OTP for the given user.
+   *
+   * @param userInputOtp The OTP entered by the user.
+   * @param userName     The username for which OTP validation is performed.
+   * @return A string indicating whether the OTP is valid or not.
+   */
   public String validateOTP(String userInputOtp, String userName) {
     if (userInputOtp.equals(otpMap.get(userName))) {
       otpMap.remove(userName,userInputOtp);
@@ -239,7 +247,27 @@ public class UserService {
     }
   }
 
+  /**
+   * Validates the provided OTP for user login.
+   *
+   * @param userInputOtp The OTP entered by the user.
+   * @param userName     The username for which OTP validation is performed.
+   * @return True if the OTP is valid, false otherwise.
+   */
+  public Boolean validateLoginOTP(String userInputOtp, String userName) {
+    if (userInputOtp.equals(otpMap.get(userName))) {
+      otpMap.remove(userName,userInputOtp);
+      return true;
+    } else {
+      return false;
+    }
+  }
 
+  /**
+   * Generates a six-digit OTP for authentication purposes.
+   *
+   * @return The generated OTP.
+   */
   private String generateOTP() {
     return new DecimalFormat("000000")
             .format(new Random().nextInt(999999));

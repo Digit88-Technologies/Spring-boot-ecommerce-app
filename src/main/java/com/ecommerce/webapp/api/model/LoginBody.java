@@ -11,9 +11,10 @@ public class LoginBody {
   @NotNull
   @NotBlank
   private String username;
-  @NotNull
-  @NotBlank
+
   private String password;
+
+  private String mobileOtp;
 
   public String getUsername() {
     return username;
@@ -31,4 +32,11 @@ public class LoginBody {
     this.password = password;
   }
 
+  public String getMobileOtp() {
+    return mobileOtp;
+  }
+
+  public void setMobileOtp(String mobileOtp) {
+    this.mobileOtp = mobileOtp;
+  }
 }

@@ -88,6 +88,12 @@ public class EmailService {
     }
   }
 
+
+  /**
+   * Sends a Welcome email to the user.
+   * @param verificationToken The verification token to be sent.
+   * @throws EmailFailureException Thrown if are unable to send the email.
+   */
   public void sendWelcomeEmail(VerificationToken verificationToken) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
 
     String toAddress = verificationToken.getUser().getEmail();

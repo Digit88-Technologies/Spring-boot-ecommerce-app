@@ -114,10 +114,10 @@ public class AuthenticationController {
   }
 
   @PostMapping("/sendOTP")
-  public ResponseEntity<?> sendOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+  public ResponseEntity<?> sendOTP(@Valid @RequestBody MobileOTPRequestDto dto) {
     try {
       logger.info("sendOTP Request: {}", dto.toString());
-      return ResponseEntity.ok().body(userService.sendOTPForPasswordReset(dto));
+      return ResponseEntity.ok().body(userService.sendOTPToContactNumber(dto));
     } catch (Exception e) {
       UnexpectedException.handleUnexpectedException("Error during OTP generation", dto.getUserName(), e);
     }
@@ -125,7 +125,7 @@ public class AuthenticationController {
   }
 
   @PostMapping("/validateOTP")
-  public ResponseEntity<?> validateOTP(@Valid @RequestBody MobileRegistrationRequestDto dto) {
+  public ResponseEntity<?> validateOTP(@Valid @RequestBody MobileOTPRequestDto dto) {
     try {
       logger.info("Validating OTP for user: {}", dto.getUserName());
       return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));

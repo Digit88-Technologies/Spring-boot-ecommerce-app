@@ -47,7 +47,12 @@ public class ProductService {
             .collect(Collectors.toList());
   }
 
-
+    /**
+     * Retrieves a list of product DTOs based on the specified category.
+     *
+     * @param category The category for which products are to be retrieved.
+     * @return A list of ProductDTOs containing product information.
+     */
   public List<ProductDTO> getProductsByCategory(String category) {
     List<Product> products = productDAO.findByCategoryCategoryName(category);
     return products.stream()
