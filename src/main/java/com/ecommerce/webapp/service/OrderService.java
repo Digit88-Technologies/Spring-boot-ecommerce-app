@@ -1,5 +1,6 @@
 package com.ecommerce.webapp.service;
 
+import com.ecommerce.webapp.exception.AddressNotFoundException;
 import com.ecommerce.webapp.model.Address;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.WebOrder;
@@ -19,10 +20,11 @@ public class OrderService {
 
   private final WebOrderDAO webOrderDAO;
 
-  private AddressDAO addressDAO;
+  private final AddressDAO addressDAO;
 
-  public OrderService(WebOrderDAO webOrderDAO) {
+  public OrderService(WebOrderDAO webOrderDAO, AddressDAO addressDAO) {
     this.webOrderDAO = webOrderDAO;
+    this.addressDAO = addressDAO;
   }
 
   /**
@@ -43,14 +45,18 @@ public class OrderService {
    */
   @Transactional
   public WebOrder createOrder(LocalUser user) {
-    WebOrder order = new WebOrder();
-    order.setUser(user);
 
-    Optional<WebOrder> address = webOrderDAO.findById(user.getId());
-    order.setAddress(address.get().getAddress());
+    List<Address> addressOptional = addressDAO.findByUser_Id(user.getId());
 
-    // Additional initialization for the order if needed
-    return order;
+    if (!addressOptional.isEmpty()) {
+      WebOrder order = new WebOrder();
+      order.setUser(user);
+      order.setAddress(addressOptional.get(0));
+      return order;
+    } else {
+      throw new AddressNotFoundException("Please update your details with an address to place an order.");
+    }
+
   }
 
   /**

@@ -33,17 +33,23 @@ public class AuthenticationController {
   public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
     try {
       userService.registerUser(registrationBody);
-      logger.info("User registration is under process: {}", registrationBody.getUsername());
-      return ResponseEntity.ok().build();
+      String message ="User registration is under process. Please check and verify your email and mobile to register yourself.";
+      logger.info(message);
+      return ResponseEntity.status(HttpStatus.OK)
+              .body(message);
     } catch (UserAlreadyExistsException ex) {
-      logger.warn("User registration failed due to existing user: {}", registrationBody.getUsername());
-      return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
+      String message ="User registration failed due to existing user: "+ registrationBody.getUsername();
+      logger.info(message);
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+              .body(message);
+
     } catch (EmailFailureException e) {
       EmailFailureException.handleException("Error sending registration email", registrationBody.getUsername(), e);
     } catch (Exception e) {
       new UnexpectedException("Unexpected error during user registration", registrationBody.getUsername(), e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!!");
   }
 
   @PostMapping("/login")
@@ -52,12 +58,16 @@ public class AuthenticationController {
       String jwt = userService.loginUser(loginBody);
       if (jwt == null) {
         logger.warn("User login failed: {}", loginBody.getUsername());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        LoginResponse response = new LoginResponse();
+        response.setJwt(null);
+        response.setSuccess(false);
+        response.setFailureReason("User login failed due to bad credentials / unverified email or mobile");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
       } else {
-        logger.info("User login successful: {}", loginBody.getUsername());
         LoginResponse response = new LoginResponse();
         response.setJwt(jwt);
         response.setSuccess(true);
+        response.setFailureReason("User login successful for user : "+ loginBody.getUsername());
         return ResponseEntity.ok(response);
       }
     } catch (UserNotVerifiedException ex) {
@@ -74,14 +84,16 @@ public class AuthenticationController {
   public ResponseEntity<?> verifyEmail(@RequestParam String token) {
     try {
       if (userService.verifyUser(token)) {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("Verified email successfully!");
       } else {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Conflict error during email verification");
       }
     } catch (Exception e) {
       UnexpectedException.handleUnexpectedException("Error during email verification", "", e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body("Something went wrong!!");
   }
 
   @GetMapping("/me")
@@ -93,24 +105,24 @@ public class AuthenticationController {
   public ResponseEntity<?> forgotPassword(@RequestParam String email) {
     try {
       userService.forgotPassword(email);
-      return ResponseEntity.ok().build();
+      return ResponseEntity.ok().body("Password reset email has been successfully sent to the user.");
     } catch (EmailNotFoundException ex) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad credentials. Please check the data provided!");
     } catch (EmailFailureException | MessagingException | UnsupportedEncodingException e) {
       UnexpectedException.handleUnexpectedException("Error during password reset", email, e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
   }
 
   @PostMapping("/reset")
   public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetBody body) {
     try {
       userService.resetPassword(body);
-      return ResponseEntity.ok().build();
+      return ResponseEntity.ok().body("Password has been successfully reset for the user.");
     } catch (Exception e) {
       UnexpectedException.handleUnexpectedException("Error during password reset", null , e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
   }
 
   @PostMapping("/sendOTP")
@@ -121,7 +133,7 @@ public class AuthenticationController {
     } catch (Exception e) {
       UnexpectedException.handleUnexpectedException("Error during OTP generation", dto.getUserName(), e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
   }
 
   @PostMapping("/validateOTP")
@@ -132,7 +144,7 @@ public class AuthenticationController {
     } catch (Exception e) {
       UnexpectedException.handleUnexpectedException("Error during OTP validation", dto.getUserName(), e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
   }
 
 }

@@ -240,10 +240,10 @@ public class UserService {
           localUserDAO.save(user);
         }
       }
-      return "Valid OTP please proceed with your transaction !";
+      return "Valid OTP please proceed!";
 
     } else {
-      return "Invalid user / otp. Please check user / otp and retry !";
+      return "Invalid User / OTP entered. Please check and retry !";
     }
   }
 
