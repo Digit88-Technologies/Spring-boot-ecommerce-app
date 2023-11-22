@@ -2,6 +2,7 @@ package com.ecommerce.webapp.service;
 
 import com.ecommerce.webapp.api.model.ProductCategoryDTO;
 import com.ecommerce.webapp.api.model.ProductDTO;
+import com.ecommerce.webapp.exception.CategoryNotFoundException;
 import com.ecommerce.webapp.model.Product;
 import com.ecommerce.webapp.model.ProductCategory;
 import com.ecommerce.webapp.model.dao.ProductCategoryRepository;
@@ -55,6 +56,7 @@ public class ProductService {
      */
   public List<ProductDTO> getProductsByCategory(String category) {
     List<Product> products = productDAO.findByCategoryCategoryName(category);
+    try{
     return products.stream()
             .map(product -> {
               ProductDTO dto = new ProductDTO();
@@ -65,6 +67,10 @@ public class ProductService {
               return dto;
             })
             .collect(Collectors.toList());
+  }catch(Exception e)
+    {
+        throw new CategoryNotFoundException("Could not find provided category : " + category);
+    }
   }
 
   public List<String> autocompleteProductSearch(String keyword) {
@@ -84,4 +90,23 @@ public class ProductService {
         return productDAO.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
     }
+
+    /**
+     * Retrieve a product by ID along with its associated stores.
+     *
+     * @param productId The ID of the product to retrieve.
+     * @return The product with associated stores if found, otherwise null.
+     */
+//    public Product getProductWithStores(Long productId) {
+//        return productDAO.findByIdWithStores(productId);
+//    }
+
+    /**
+     * Retrieve all products along with their associated stores.
+     *
+     * @return List of products with associated stores.
+     */
+//    public List<Product> getAllProductsWithStores() {
+//        return productDAO.findAllWithStores();
+//    }
 }

@@ -1,6 +1,7 @@
 package com.ecommerce.webapp.service;
 
 import com.ecommerce.webapp.exception.AddressNotFoundException;
+import com.ecommerce.webapp.exception.ContactNotFoundException;
 import com.ecommerce.webapp.model.Address;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.WebOrder;
@@ -46,6 +47,10 @@ public class OrderService {
   @Transactional
   public WebOrder createOrder(LocalUser user) {
 
+    if(user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty())
+    {
+      throw new ContactNotFoundException("Please update your profile details with an contact Number to proceed.");
+    }
     List<Address> addressOptional = addressDAO.findByUser_Id(user.getId());
 
     if (!addressOptional.isEmpty()) {

@@ -57,7 +57,8 @@ public class UserService {
   public LocalUser registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException, EmailFailureException, MessagingException, UnsupportedEncodingException {
     if (localUserDAO.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent()
         || localUserDAO.findByUsernameIgnoreCase(registrationBody.getUsername()).isPresent()) {
-      throw new UserAlreadyExistsException();
+      System.out.println("User Exits from the database");
+      throw new UserAlreadyExistsException("User already exists");
     }
     LocalUser user = new LocalUser();
     user.setEmail(registrationBody.getEmail());
@@ -111,7 +112,7 @@ public class UserService {
             verificationTokenDAO.save(verificationToken);
             emailService.sendVerificationEmail(verificationToken);
           }
-          throw new UserNotVerifiedException(resend);
+          throw new UserNotVerifiedException("Provided User Is Not Verified! Please Verify The User Using Mobile And Email.");
         } else {
 
           //Re-sending OTP for pending verification
@@ -163,7 +164,7 @@ public class UserService {
       String token = jwtService.generatePasswordResetJWT(user);
       emailService.sendPasswordResetEmail(user, token);
     } else {
-      throw new EmailNotFoundException();
+      throw new EmailNotFoundException("Provided email does not exist!");
     }
   }
 

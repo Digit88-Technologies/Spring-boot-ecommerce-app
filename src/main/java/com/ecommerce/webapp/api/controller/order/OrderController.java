@@ -41,12 +41,7 @@ public class OrderController {
   @PostMapping("/place")
   public ResponseEntity<String> placeOrder(@AuthenticationPrincipal LocalUser user,
                                            @RequestBody List<OrderItem> orderData) {
-    try {
 
-      if(user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty())
-      {
-        throw new ContactNotFoundException("Please update your profile details with an contact Number to proceed.");
-      }
       // Create a new order for the user
       WebOrder order = orderService.createOrder(user);
 
@@ -82,12 +77,7 @@ public class OrderController {
       orderService.saveOrder(order);
 
       return ResponseEntity.ok("Order placed successfully!");
-    } catch (ContactNotFoundException ex) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("Error placing order: " + e.getMessage());
-    }
+
   }
 
   /**

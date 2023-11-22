@@ -1,6 +1,8 @@
 package com.ecommerce.webapp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -24,6 +26,15 @@ public class Store {
   @ManyToOne
   @JoinColumn(name = "location_id", nullable = false, unique = false)
   private Location location;
+
+  @JsonBackReference
+  @ManyToMany
+  @JoinTable(
+          name = "store_product",
+          joinColumns = @JoinColumn(name = "store_id"),
+          inverseJoinColumns = @JoinColumn(name = "product_id")
+  )
+  private List<Product> products;
 
   public Long getId() {
     return id;
@@ -57,5 +68,11 @@ public class Store {
     this.location = location;
   }
 
+  public List<Product> getProducts() {
+    return products;
+  }
 
+  public void setProducts(List<Product> products) {
+    this.products = products;
+  }
 }

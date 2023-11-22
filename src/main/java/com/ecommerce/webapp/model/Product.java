@@ -1,6 +1,8 @@
 package com.ecommerce.webapp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -31,6 +33,9 @@ public class Product {
   @JoinColumn(name = "category_id")
   private ProductCategory category;
 
+  @JsonManagedReference
+  @ManyToMany(mappedBy = "products")
+  private List<Store> stores;
 
   public ProductCategory getCategory() {
     return category;
@@ -98,4 +103,11 @@ public class Product {
     this.id = id;
   }
 
+  public List<Store> getStores() {
+    return stores;
+  }
+
+  public void setStores(List<Store> stores) {
+    this.stores = stores;
+  }
 }

@@ -84,7 +84,7 @@ public class EmailService {
       javaMailSender.send(message);
       System.out.println("Email has been sent");
     } catch (MailException ex) {
-      EmailFailureException.handleException("Error sending registration email", verificationToken.getUser().getUsername(), ex);
+      throw new EmailFailureException("Error sending registration email", verificationToken.getUser().getUsername(), ex);
     }
   }
 
@@ -120,7 +120,7 @@ public class EmailService {
       javaMailSender.send(message);
       System.out.println("Email has been sent out for successful registration");
     } catch (MailException ex) {
-      EmailFailureException.handleException("Error sending welcome email", user.getUsername(), ex);
+      throw new EmailFailureException("Error sending welcome email", user.getUsername(), ex);
     }
   }
 
@@ -164,7 +164,7 @@ public class EmailService {
     try {
       javaMailSender.send(message);
     } catch (MailException ex) {
-      EmailFailureException.handleException("Error sending password reset email", user.getUsername(), ex);
+      throw new EmailFailureException("Error sending password reset email", user.getUsername(), ex);
     }
   }
 

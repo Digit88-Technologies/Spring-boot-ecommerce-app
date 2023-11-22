@@ -30,31 +30,15 @@ public class AuthenticationController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
-    try {
+  public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) throws MessagingException, EmailFailureException, UnsupportedEncodingException {
       userService.registerUser(registrationBody);
       String message ="User registration is under process. Please check and verify your email. Also register and verify your mobile to complete user profile.";
-      logger.info(message);
       return ResponseEntity.status(HttpStatus.OK)
               .body(message);
-    } catch (UserAlreadyExistsException ex) {
-
-      String message ="User registration failed due to existing user: "+ registrationBody.getUsername();
-      logger.info(message);
-      return ResponseEntity.status(HttpStatus.CONFLICT)
-              .body(message);
-
-    } catch (EmailFailureException e) {
-      EmailFailureException.handleException("Error sending registration email", registrationBody.getUsername(), e);
-    } catch (Exception e) {
-      new UnexpectedException("Unexpected error during user registration", registrationBody.getUsername(), e);
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!!");
   }
 
   @PostMapping("/login")
-  public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody) {
-    try {
+  public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody) throws UserNotVerifiedException, MessagingException, UnsupportedEncodingException {
       String jwt = userService.loginUser(loginBody);
       if (jwt == null) {
         logger.warn("User login failed: {}", loginBody.getUsername());
@@ -70,31 +54,18 @@ public class AuthenticationController {
         response.setFailureReason("User login successful for user : "+ loginBody.getUsername());
         return ResponseEntity.ok(response);
       }
-    } catch (UserNotVerifiedException ex) {
-      UserNotVerifiedException.handleUserNotVerifiedException("User login failed due to unverified account", loginBody.getUsername(), ex);
-    } catch (EmailFailureException ex) {
-      EmailFailureException.handleException("Error sending login email", loginBody.getUsername(), ex);
-    } catch (Exception e) {
-      UnexpectedException.handleUnexpectedException("Unexpected error during user login", loginBody.getUsername(), e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-  }
 
   @PostMapping("/verify")
-  public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-    try {
+  public ResponseEntity<?> verifyEmail(@RequestParam String token) throws MessagingException, UnsupportedEncodingException {
       if (userService.verifyUser(token)) {
         return ResponseEntity.ok().body("Verified email successfully!");
       } else {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body("Conflict error during email verification");
       }
-    } catch (Exception e) {
-      UnexpectedException.handleUnexpectedException("Error during email verification", "", e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Something went wrong!!");
-  }
+
 
   @GetMapping("/me")
   public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
@@ -102,49 +73,31 @@ public class AuthenticationController {
   }
 
   @PostMapping("/forgot")
-  public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-    try {
+  public ResponseEntity<?> forgotPassword(@RequestParam String email) throws EmailNotFoundException, MessagingException, UnsupportedEncodingException {
+
       userService.forgotPassword(email);
       return ResponseEntity.ok().body("Password reset email has been successfully sent to the user.");
-    } catch (EmailNotFoundException ex) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad credentials. Please check the data provided!");
-    } catch (EmailFailureException | MessagingException | UnsupportedEncodingException e) {
-      UnexpectedException.handleUnexpectedException("Error during password reset", email, e);
     }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
-  }
 
   @PostMapping("/reset")
   public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetBody body) {
-    try {
+
       userService.resetPassword(body);
       return ResponseEntity.ok().body("Password has been successfully reset for the user.");
-    } catch (Exception e) {
-      UnexpectedException.handleUnexpectedException("Error during password reset", null , e);
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
-  }
+     }
 
   @PostMapping("/sendOTP")
   public ResponseEntity<?> sendOTP(@Valid @RequestBody MobileOTPRequestDto dto) {
-    try {
+
       logger.info("sendOTP Request: {}", dto.toString());
       return ResponseEntity.ok().body(userService.sendOTPToContactNumber(dto));
-    } catch (Exception e) {
-      UnexpectedException.handleUnexpectedException("Error during OTP generation", dto.getUserName(), e);
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
-  }
+     }
 
   @PostMapping("/validateOTP")
   public ResponseEntity<?> validateOTP(@Valid @RequestBody MobileOTPRequestDto dto) {
-    try {
-      logger.info("Validating OTP for user: {}", dto.getUserName());
-      return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));
-    } catch (Exception e) {
-      UnexpectedException.handleUnexpectedException("Error during OTP validation", dto.getUserName(), e);
-    }
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something Went Wrong!");
+
+    logger.info("Validating OTP for user: {}", dto.getUserName());
+    return ResponseEntity.ok().body(userService.validateOTP(dto.getOneTimePassword(), dto.getUserName()));
   }
 
 }
