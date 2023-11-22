@@ -33,7 +33,7 @@ public class AuthenticationController {
   public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) {
     try {
       userService.registerUser(registrationBody);
-      String message ="User registration is under process. Please check and verify your email and mobile to register yourself.";
+      String message ="User registration is under process. Please check and verify your email. Also register and verify your mobile to complete user profile.";
       logger.info(message);
       return ResponseEntity.status(HttpStatus.OK)
               .body(message);

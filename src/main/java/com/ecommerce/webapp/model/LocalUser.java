@@ -34,7 +34,7 @@ public class LocalUser implements UserDetails {
   private String lastName;
 
   @Getter
-  @Column(name = "phone_number", nullable = false)
+  @Column(name = "phone_number")
   private String phoneNumber;
   @JsonIgnore
   @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)

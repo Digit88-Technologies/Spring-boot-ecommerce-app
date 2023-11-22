@@ -2,10 +2,7 @@ package com.ecommerce.webapp.service;
 
 import com.ecommerce.webapp.api.model.*;
 import com.ecommerce.webapp.api.security.TwilioConfig;
-import com.ecommerce.webapp.exception.EmailFailureException;
-import com.ecommerce.webapp.exception.EmailNotFoundException;
-import com.ecommerce.webapp.exception.UserAlreadyExistsException;
-import com.ecommerce.webapp.exception.UserNotVerifiedException;
+import com.ecommerce.webapp.exception.*;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.VerificationToken;
 import com.ecommerce.webapp.model.dao.LocalUserDAO;
@@ -68,17 +65,11 @@ public class UserService {
     user.setFirstName(registrationBody.getFirstName());
     user.setLastName(registrationBody.getLastName());
     user.setPassword(encryptionService.encryptPassword(registrationBody.getPassword()));
-    user.setPhoneNumber(registrationBody.getPhoneNumber());
     VerificationToken verificationToken = createVerificationToken(user);
 
     //Sending the registration email to the local user for verification
     emailService.sendVerificationEmail(verificationToken);
 
-    //Sending OTP for verification
-    MobileOTPRequestDto mobileRegistrationRequestDto = new MobileOTPRequestDto();
-    mobileRegistrationRequestDto.setUserName(user.getUsername());
-    mobileRegistrationRequestDto.setPhoneNumber(user.getPhoneNumber());
-    sendOTPToContactNumber(mobileRegistrationRequestDto);
 
     return localUserDAO.save(user);
   }
@@ -151,10 +142,8 @@ public class UserService {
         localUserDAO.save(user);
         verificationTokenDAO.deleteByUser(user);
 
-        VerificationToken verificationTokenForEmail = createVerificationToken(user);
-
-        //Sending the registration email to the local user for verification
-        emailService.sendWelcomeEmail(verificationTokenForEmail);
+        //Sending the welcome email to the local user post registration
+        emailService.sendWelcomeEmail(user);
         return true;
       }
     }
@@ -200,6 +189,16 @@ public class UserService {
    */
   public boolean userHasPermissionToUser(LocalUser user, Long id) {
     return user.getId() == id;
+  }
+
+  /**
+   * Method to check if an authenticated user has permission to a user Name.
+   * @param user The authenticated user.
+   * @param name The user Name.
+   * @return True if they have permission, false otherwise.
+   */
+  public boolean userHasPermissionToUserByUserName(LocalUser user, String name) {
+    return Objects.equals(user.getUsername(), name);
   }
 
   public MobileOTPResponseDto sendOTPToContactNumber(MobileOTPRequestDto mobileRegistrationRequestDto) {

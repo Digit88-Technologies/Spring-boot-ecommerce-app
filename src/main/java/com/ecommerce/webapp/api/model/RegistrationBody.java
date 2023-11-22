@@ -25,8 +25,6 @@ public class RegistrationBody {
   private String lastName;
 
   //For OTP Verification
-  @NotNull
-  @NotBlank
   @Pattern(regexp = "^\\+\\d{1,3}\\s\\d{10}$", message = "Invalid phone number format")
   private String phoneNumber;
 

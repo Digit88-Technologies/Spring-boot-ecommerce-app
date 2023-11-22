@@ -1,6 +1,8 @@
 package com.ecommerce.webapp.api.controller.order;
 
+import com.ecommerce.webapp.api.model.LoginResponse;
 import com.ecommerce.webapp.api.model.OrderItem;
+import com.ecommerce.webapp.exception.ContactNotFoundException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.Product;
 import com.ecommerce.webapp.model.WebOrder;
@@ -40,6 +42,11 @@ public class OrderController {
   public ResponseEntity<String> placeOrder(@AuthenticationPrincipal LocalUser user,
                                            @RequestBody List<OrderItem> orderData) {
     try {
+
+      if(user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty())
+      {
+        throw new ContactNotFoundException("Please update your profile details with an contact Number to proceed.");
+      }
       // Create a new order for the user
       WebOrder order = orderService.createOrder(user);
 
@@ -75,8 +82,9 @@ public class OrderController {
       orderService.saveOrder(order);
 
       return ResponseEntity.ok("Order placed successfully!");
-    } catch (Exception e) {
-      // Handle exceptions and return an error response
+    } catch (ContactNotFoundException ex) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body("Error placing order: " + e.getMessage());
     }

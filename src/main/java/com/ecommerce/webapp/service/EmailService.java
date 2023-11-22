@@ -91,12 +91,12 @@ public class EmailService {
 
   /**
    * Sends a Welcome email to the user.
-   * @param verificationToken The verification token to be sent.
+   * @param user The User to be sent.
    * @throws EmailFailureException Thrown if are unable to send the email.
    */
-  public void sendWelcomeEmail(VerificationToken verificationToken) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
+  public void sendWelcomeEmail(LocalUser user) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
 
-    String toAddress = verificationToken.getUser().getEmail();
+    String toAddress = user.getEmail();
     String fromTheAddress = fromAddress;
     String senderName = "E-Commerce Shop";
     String subject = "Congratulations and welcome aboard!";
@@ -112,7 +112,7 @@ public class EmailService {
     helper.setTo(toAddress);
     helper.setSubject(subject);
 
-    content = content.replace("[[name]]", verificationToken.getUser().getUsername());
+    content = content.replace("[[name]]", user.getUsername());
 
     helper.setText(content, true);
 
@@ -120,7 +120,7 @@ public class EmailService {
       javaMailSender.send(message);
       System.out.println("Email has been sent out for successful registration");
     } catch (MailException ex) {
-      EmailFailureException.handleException("Error sending welcome email", verificationToken.getUser().getUsername(), ex);
+      EmailFailureException.handleException("Error sending welcome email", user.getUsername(), ex);
     }
   }
 

@@ -1,8 +1,10 @@
 package com.ecommerce.webapp.api.controller.user;
 
+import com.ecommerce.webapp.api.model.MobileOTPRequestDto;
 import com.ecommerce.webapp.model.Address;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.dao.AddressDAO;
+import com.ecommerce.webapp.model.dao.LocalUserDAO;
 import com.ecommerce.webapp.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +19,13 @@ import java.util.Optional;
 public class UserController {
 
   private AddressDAO addressDAO;
+
+  private LocalUserDAO localUserDAO;
   private UserService userService;
 
-
-  public UserController(AddressDAO addressDAO,
-                        UserService userService) {
+  public UserController(AddressDAO addressDAO, LocalUserDAO localUserDAO, UserService userService) {
     this.addressDAO = addressDAO;
+    this.localUserDAO = localUserDAO;
     this.userService = userService;
   }
 
@@ -62,6 +65,20 @@ public class UserController {
     Address savedAddress = addressDAO.save(address);
 
     return ResponseEntity.ok(savedAddress);
+  }
+
+  @PutMapping("/update/contact")
+  public ResponseEntity<LocalUser> putContactDetails(
+          @AuthenticationPrincipal LocalUser user,
+          @RequestBody MobileOTPRequestDto requestDto) {
+    if (!userService.userHasPermissionToUserByUserName(user, requestDto.getUserName())) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    user.setPhoneNumber(requestDto.getPhoneNumber());
+    LocalUser savedUser = localUserDAO.save(user);
+
+    return ResponseEntity.ok(savedUser);
   }
 
   /**
