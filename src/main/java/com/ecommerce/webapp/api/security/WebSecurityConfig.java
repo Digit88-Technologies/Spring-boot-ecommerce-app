@@ -9,28 +9,29 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 @Configuration
 public class WebSecurityConfig {
 
-  private JWTRequestFilter jwtRequestFilter;
+    private JWTRequestFilter jwtRequestFilter;
 
-  public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
-    this.jwtRequestFilter = jwtRequestFilter;
-  }
+    public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
 
-  /**
-   * Filter chain to configure security.
-   * @param http The security object.
-   * @return The chain built.
-   * @throws Exception Thrown on error configuring.
-   */
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.csrf().disable().cors().disable();
-    http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
-    http.authorizeHttpRequests()
-        // Specific exclusions or rules.
-        .requestMatchers("/product/**", "/auth/register", "/auth/login",
-            "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP","/auth/sendOTP","/elastic/**").permitAll()
-        .anyRequest().authenticated();
-    return http.build();
-  }
+    /**
+     * Filter chain to configure security.
+     *
+     * @param http The security object.
+     * @return The chain built.
+     * @throws Exception Thrown on error configuring.
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable().cors().disable();
+        http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
+        http.authorizeHttpRequests()
+                // Specific exclusions or rules.
+                .requestMatchers("/product/**", "/auth/register", "/auth/login",
+                        "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP", "/auth/sendOTP", "/elastic/**").permitAll()
+                .anyRequest().authenticated();
+        return http.build();
+    }
 
 }

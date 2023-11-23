@@ -5,6 +5,6 @@ package com.ecommerce.webapp.exception;
  */
 public class UserNotVerifiedException extends RuntimeException {
 
-  public UserNotVerifiedException(String s) {
-  }
+    public UserNotVerifiedException(String s) {
+    }
 }

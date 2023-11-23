@@ -11,6 +11,6 @@ import java.util.List;
  */
 public interface WebOrderDAO extends ListCrudRepository<WebOrder, Long> {
 
-  List<WebOrder> findByUser(LocalUser user);
+    List<WebOrder> findByUser(LocalUser user);
 
 }

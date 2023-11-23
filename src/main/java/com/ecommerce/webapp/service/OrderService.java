@@ -19,58 +19,57 @@ import java.util.Optional;
 @Service
 public class OrderService {
 
-  private final WebOrderDAO webOrderDAO;
+    private final WebOrderDAO webOrderDAO;
 
-  private final AddressDAO addressDAO;
+    private final AddressDAO addressDAO;
 
-  public OrderService(WebOrderDAO webOrderDAO, AddressDAO addressDAO) {
-    this.webOrderDAO = webOrderDAO;
-    this.addressDAO = addressDAO;
-  }
-
-  /**
-   * Gets the list of orders for a given user.
-   *
-   * @param user The user to search for.
-   * @return The list of orders.
-   */
-  public List<WebOrder> getOrders(LocalUser user) {
-    return webOrderDAO.findByUser(user);
-  }
-
-  /**
-   * Create a new order for the given user.
-   *
-   * @param user The user for whom the order is created.
-   * @return The created order.
-   */
-  @Transactional
-  public WebOrder createOrder(LocalUser user) {
-
-    if(user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty())
-    {
-      throw new ContactNotFoundException("Please update your profile details with an contact Number to proceed.");
-    }
-    List<Address> addressOptional = addressDAO.findByUser_Id(user.getId());
-
-    if (!addressOptional.isEmpty()) {
-      WebOrder order = new WebOrder();
-      order.setUser(user);
-      order.setAddress(addressOptional.get(0));
-      return order;
-    } else {
-      throw new AddressNotFoundException("Please update your details with an address to place an order.");
+    public OrderService(WebOrderDAO webOrderDAO, AddressDAO addressDAO) {
+        this.webOrderDAO = webOrderDAO;
+        this.addressDAO = addressDAO;
     }
 
-  }
+    /**
+     * Gets the list of orders for a given user.
+     *
+     * @param user The user to search for.
+     * @return The list of orders.
+     */
+    public List<WebOrder> getOrders(LocalUser user) {
+        return webOrderDAO.findByUser(user);
+    }
 
-  /**
-   * Save an order to the database.
-   *
-   * @param order The order to be saved.
-   */
-  @Transactional
-  public void saveOrder(WebOrder order) {
-    webOrderDAO.save(order);
-  }
+    /**
+     * Create a new order for the given user.
+     *
+     * @param user The user for whom the order is created.
+     * @return The created order.
+     */
+    @Transactional
+    public WebOrder createOrder(LocalUser user) {
+
+        if (user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty()) {
+            throw new ContactNotFoundException("Please update your profile details with an contact Number to proceed.");
+        }
+        List<Address> addressOptional = addressDAO.findByUser_Id(user.getId());
+
+        if (!addressOptional.isEmpty()) {
+            WebOrder order = new WebOrder();
+            order.setUser(user);
+            order.setAddress(addressOptional.get(0));
+            return order;
+        } else {
+            throw new AddressNotFoundException("Please update your details with an address to place an order.");
+        }
+
+    }
+
+    /**
+     * Save an order to the database.
+     *
+     * @param order The order to be saved.
+     */
+    @Transactional
+    public void saveOrder(WebOrder order) {
+        webOrderDAO.save(order);
+    }
 }

@@ -12,10 +12,10 @@ import java.util.Optional;
  */
 public interface VerificationTokenDAO extends ListCrudRepository<VerificationToken, Long> {
 
-  Optional<VerificationToken> findByToken(String token);
+    Optional<VerificationToken> findByToken(String token);
 
-  void deleteByUser(LocalUser user);
+    void deleteByUser(LocalUser user);
 
-  List<VerificationToken> findByUser_IdOrderByIdDesc(Long id);
+    List<VerificationToken> findByUser_IdOrderByIdDesc(Long id);
 
 }

@@ -8,35 +8,35 @@ import jakarta.validation.constraints.NotNull;
  */
 public class LoginBody {
 
-  @NotNull
-  @NotBlank
-  private String username;
+    @NotNull
+    @NotBlank
+    private String username;
 
-  private String password;
+    private String password;
 
-  private String mobileOtp;
+    private String mobileOtp;
 
-  public String getUsername() {
-    return username;
-  }
+    public String getUsername() {
+        return username;
+    }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-  public String getPassword() {
-    return password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-  public String getMobileOtp() {
-    return mobileOtp;
-  }
+    public String getMobileOtp() {
+        return mobileOtp;
+    }
 
-  public void setMobileOtp(String mobileOtp) {
-    this.mobileOtp = mobileOtp;
-  }
+    public void setMobileOtp(String mobileOtp) {
+        this.mobileOtp = mobileOtp;
+    }
 }

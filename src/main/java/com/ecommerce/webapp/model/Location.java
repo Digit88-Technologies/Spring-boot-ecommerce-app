@@ -12,48 +12,48 @@ import java.util.List;
 @Table(name = "location")
 public class Location {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", nullable = false)
-  private Long id;
-  @Column(name = "name", nullable = false, unique = true)
-  private String name;
-  @Column(name = "location_address_description", nullable = false)
-  private String locationAddressDescription;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
+    @Column(name = "location_address_description", nullable = false)
+    private String locationAddressDescription;
 
-  @JsonIgnore
-  @OneToMany(mappedBy = "location", cascade = CascadeType.REMOVE, orphanRemoval = true)
-  private List<Store> store;
+    @JsonIgnore
+    @OneToMany(mappedBy = "location", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Store> store;
 
-  public Long getId() {
-    return id;
-  }
+    public Long getId() {
+        return id;
+    }
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public String getLocationAddressDescription() {
-    return locationAddressDescription;
-  }
+    public String getLocationAddressDescription() {
+        return locationAddressDescription;
+    }
 
-  public void setLocationAddressDescription(String locationAddressDescription) {
-    this.locationAddressDescription = locationAddressDescription;
-  }
+    public void setLocationAddressDescription(String locationAddressDescription) {
+        this.locationAddressDescription = locationAddressDescription;
+    }
 
-  public List<Store> getStore() {
-    return store;
-  }
+    public List<Store> getStore() {
+        return store;
+    }
 
-  public void setStore(List<Store> store) {
-    this.store = store;
-  }
+    public void setStore(List<Store> store) {
+        this.store = store;
+    }
 }

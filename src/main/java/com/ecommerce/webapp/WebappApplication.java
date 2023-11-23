@@ -11,16 +11,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class WebappApplication {
 
 
-	@Autowired
-	private TwilioConfig twilioConfig;
+    @Autowired
+    private TwilioConfig twilioConfig;
 
-	@PostConstruct
-	public void initTwilio(){
-		Twilio.init(twilioConfig.getAccountSid(),twilioConfig.getAuthToken());
-	}
+    @PostConstruct
+    public void initTwilio() {
+        Twilio.init(twilioConfig.getAccountSid(), twilioConfig.getAuthToken());
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(WebappApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(WebappApplication.class, args);
+    }
 
 }
