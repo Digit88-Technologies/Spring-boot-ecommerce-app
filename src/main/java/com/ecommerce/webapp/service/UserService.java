@@ -27,6 +27,11 @@ import java.util.*;
 @Service
 public class UserService {
 
+    public static final String USER_ALREADY_EXISTS = "User already exists";
+    public static final String USER_NOT_VERIFIED = "Provided User Is Not Verified! Please Verify The User Using Mobile And Email.";
+    public static final String EMAIL_DOES_NOT_EXIST = "Provided email does not exist!";
+    public static final String VALID_OTP = "Valid OTP please proceed!";
+    public static final String INVALID_USER_OR_OTP = "Invalid User / OTP entered. Please check and retry !";
     private LocalUserDAO localUserDAO;
     private VerificationTokenDAO verificationTokenDAO;
     private EncryptionService encryptionService;
@@ -58,8 +63,7 @@ public class UserService {
     public LocalUser registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException, EmailFailureException, MessagingException, UnsupportedEncodingException {
         if (localUserDAO.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent()
                 || localUserDAO.findByUsernameIgnoreCase(registrationBody.getUsername()).isPresent()) {
-            System.out.println("User Exits from the database");
-            throw new UserAlreadyExistsException("User already exists");
+            throw new UserAlreadyExistsException(USER_ALREADY_EXISTS);
         }
         LocalUser user = new LocalUser();
         user.setEmail(registrationBody.getEmail());
@@ -100,7 +104,6 @@ public class UserService {
     public String loginUser(LoginBody loginBody) throws UserNotVerifiedException, EmailFailureException, MessagingException, UnsupportedEncodingException {
         Optional<LocalUser> opUser = localUserDAO.findByUsernameIgnoreCase(loginBody.getUsername());
         if (opUser.isPresent()) {
-            System.out.println("Login user :  " + opUser.get());
             LocalUser user = opUser.get();
             if ((loginBody.getPassword() != null && encryptionService.verifyPassword(loginBody.getPassword(), user.getPassword())) ||
                     (loginBody.getMobileOtp() != null && validateLoginOTP(loginBody.getMobileOtp(), user.getUsername()))) {
@@ -115,7 +118,7 @@ public class UserService {
                         verificationTokenDAO.save(verificationToken);
                         emailService.sendVerificationEmail(verificationToken);
                     }
-                    throw new UserNotVerifiedException("Provided User Is Not Verified! Please Verify The User Using Mobile And Email.");
+                    throw new UserNotVerifiedException(USER_NOT_VERIFIED);
                 } else {
 
                     //Re-sending OTP for pending verification
@@ -169,7 +172,7 @@ public class UserService {
             String token = jwtService.generatePasswordResetJWT(user);
             emailService.sendPasswordResetEmail(user, token);
         } else {
-            throw new EmailNotFoundException("Provided email does not exist!");
+            throw new EmailNotFoundException(EMAIL_DOES_NOT_EXIST);
         }
     }
 
@@ -248,10 +251,10 @@ public class UserService {
                     localUserDAO.save(user);
                 }
             }
-            return "Valid OTP please proceed!";
+            return VALID_OTP;
 
         } else {
-            return "Invalid User / OTP entered. Please check and retry !";
+            return INVALID_USER_OR_OTP;
         }
     }
 

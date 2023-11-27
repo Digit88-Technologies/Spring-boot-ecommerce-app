@@ -28,6 +28,9 @@ import java.util.Optional;
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInterceptor {
 
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String BEARER_ = "Bearer ";
+    public static final String CONTEXT_IS_NULL = "Security Context is null";
     private JWTService jwtService;
     private LocalUserDAO localUserDAO;
 
@@ -39,7 +42,7 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String tokenHeader = request.getHeader("Authorization");
+        String tokenHeader = request.getHeader(AUTHORIZATION);
         UsernamePasswordAuthenticationToken token = checkToken(tokenHeader);
         if (token != null) {
             token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -55,7 +58,7 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
      * @return The Authentication object if set.
      */
     private UsernamePasswordAuthenticationToken checkToken(String token) {
-        if (token != null && token.startsWith("Bearer ")) {
+        if (token != null && token.startsWith(BEARER_)) {
             token = token.substring(7);
             try {
                 String username = jwtService.getUsername(token);
@@ -73,7 +76,7 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
         }
 
         SecurityContextHolder.getContext().setAuthentication(null);
-        System.out.println("Security Context is null");
+        System.out.println(CONTEXT_IS_NULL);
         return null;
     }
 

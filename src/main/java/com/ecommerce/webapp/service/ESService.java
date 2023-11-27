@@ -18,16 +18,15 @@ import java.util.function.Supplier;
 @Service
 public class ESService {
 
-   @Autowired
-   private ElasticsearchClient  elasticsearchClient;
+    @Autowired
+    private ElasticsearchClient elasticsearchClient;
 
 
     public List<String> autoSuggestProduct(String partialProductName) throws IOException {
 
         Supplier<Query> supplier = ESUtil.createSupplierAutoSuggest(partialProductName);
-       SearchResponse<ProductsESIndex> searchResponse  = elasticsearchClient
-                .search(s->s.index("products").query(supplier.get()), ProductsESIndex.class);
-        System.out.println(" elasticsearch auto suggestion query"+supplier.get().toString());
+        SearchResponse<ProductsESIndex> searchResponse = elasticsearchClient
+                .search(s -> s.index("products").query(supplier.get()), ProductsESIndex.class);
         List<Hit<ProductsESIndex>> hitList = searchResponse.hits().hits();
         List<ProductsESIndex> productList = new ArrayList<>();
         for (Hit<ProductsESIndex> hit : hitList) {

@@ -20,6 +20,9 @@ import java.io.UnsupportedEncodingException;
 @Service
 public class EmailService {
 
+    public static final String ERROR_SENDING_PASSWORD_RESET_EMAIL = "Error sending password reset email";
+    public static final String ERROR_SENDING_WELCOME_EMAIL = "Error sending welcome email";
+    public static final String ERROR_SENDING_REGISTRATION_EMAIL = "Error sending registration email";
     /**
      * The from address to use on emails.
      */
@@ -58,11 +61,6 @@ public class EmailService {
      * @throws EmailFailureException Thrown if are unable to send the email.
      */
     public void sendVerificationEmail(VerificationToken verificationToken) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
-//    SimpleMailMessage message = makeMailMessage();
-//    message.setTo(verificationToken.getUser().getEmail());
-//    message.setSubject("Verify your email to active your account.");
-//    message.setText("Please follow the link below to verify your email to active your account.\n" +
-//        url + "/auth/verify?token=" + verificationToken.getToken());
 
         String toAddress = verificationToken.getUser().getEmail();
         String fromTheAddress = fromAddress;
@@ -92,7 +90,7 @@ public class EmailService {
             javaMailSender.send(message);
             System.out.println("Email has been sent");
         } catch (MailException ex) {
-            throw new EmailFailureException("Error sending registration email", verificationToken.getUser().getUsername(), ex);
+            throw new EmailFailureException(ERROR_SENDING_REGISTRATION_EMAIL, verificationToken.getUser().getUsername(), ex);
         }
     }
 
@@ -129,7 +127,7 @@ public class EmailService {
             javaMailSender.send(message);
             System.out.println("Email has been sent out for successful registration");
         } catch (MailException ex) {
-            throw new EmailFailureException("Error sending welcome email", user.getUsername(), ex);
+            throw new EmailFailureException(ERROR_SENDING_WELCOME_EMAIL, user.getUsername(), ex);
         }
     }
 
@@ -141,12 +139,6 @@ public class EmailService {
      * @throws EmailFailureException
      */
     public void sendPasswordResetEmail(LocalUser user, String token) throws EmailFailureException, MessagingException, UnsupportedEncodingException {
-//    SimpleMailMessage message = makeMailMessage();
-//    message.setTo(user.getEmail());
-//    message.setSubject("Your password reset request link.");
-//    message.setText("You requested a password reset on our website. Please " +
-//        "find the link below to be able to reset your password.\n" + url +
-//        "/auth/reset?token=" + token);
 
         String toAddress = user.getEmail();
         String fromTheAddress = fromAddress;
@@ -174,7 +166,7 @@ public class EmailService {
         try {
             javaMailSender.send(message);
         } catch (MailException ex) {
-            throw new EmailFailureException("Error sending password reset email", user.getUsername(), ex);
+            throw new EmailFailureException(ERROR_SENDING_PASSWORD_RESET_EMAIL, user.getUsername(), ex);
         }
     }
 

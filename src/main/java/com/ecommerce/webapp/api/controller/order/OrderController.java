@@ -1,8 +1,6 @@
 package com.ecommerce.webapp.api.controller.order;
 
-import com.ecommerce.webapp.api.model.LoginResponse;
 import com.ecommerce.webapp.api.model.OrderItem;
-import com.ecommerce.webapp.exception.ContactNotFoundException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.Product;
 import com.ecommerce.webapp.model.WebOrder;
@@ -21,6 +19,8 @@ import java.util.List;
 @RequestMapping("/order")
 public class OrderController {
 
+    public static final String INSUFFICIENT_INVENTORY_FOR_PRODUCT_ID = "Insufficient inventory for product ID: ";
+    public static final String ORDER_PLACED_SUCCESSFULLY = "Order placed successfully!";
     private OrderService orderService;
     private ProductService productService;
     private InventoryService inventoryService;
@@ -50,33 +50,26 @@ public class OrderController {
             Long productId = orderItem.getProductId();
             Integer quantity = orderItem.getQuantity();
 
-            // Retrieve the product
             Product product = productService.getProductById(productId);
 
-            // Check if there is enough inventory for the requested quantity
             if (inventoryService.hasSufficientInventory(product, quantity)) {
-                // Reduce the inventory
                 inventoryService.reduceInventory(product, quantity);
 
-                // Create a new order quantity entry
                 WebOrderQuantities orderQuantities = new WebOrderQuantities();
                 orderQuantities.setProduct(product);
                 orderQuantities.setQuantity(quantity);
                 orderQuantities.setOrder(order);
 
-                // Add the order quantity to the order
                 order.getQuantities().add(orderQuantities);
             } else {
-                // If there is not enough inventory, return an error response
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Insufficient inventory for product ID: " + productId);
+                        .body(INSUFFICIENT_INVENTORY_FOR_PRODUCT_ID + productId);
             }
         }
 
-        // Save the order to the database
         orderService.saveOrder(order);
 
-        return ResponseEntity.ok("Order placed successfully!");
+        return ResponseEntity.ok(ORDER_PLACED_SUCCESSFULLY);
 
     }
 

@@ -18,6 +18,9 @@ import java.util.Optional;
 @RequestMapping("/user")
 public class UserController {
 
+    public static final String PATCH_ADDRESS = "/{userId}/address/{addressId}";
+    public static final String UPDATE_CONTACT = "/update/contact";
+    public static final String USER_ID_ADDRESS = "/{userId}/address";
     private AddressDAO addressDAO;
 
     private LocalUserDAO localUserDAO;
@@ -53,7 +56,7 @@ public class UserController {
      * @param address The Address to be added.
      * @return The saved address.
      */
-    @PutMapping("/{userId}/address")
+    @PutMapping(USER_ID_ADDRESS)
     public ResponseEntity<Address> putAddress(
             @AuthenticationPrincipal LocalUser user, @PathVariable Long userId,
             @RequestBody Address address) {
@@ -69,7 +72,7 @@ public class UserController {
         return ResponseEntity.ok(savedAddress);
     }
 
-    @PutMapping("/update/contact")
+    @PutMapping(UPDATE_CONTACT)
     public ResponseEntity<LocalUser> putContactDetails(
             @AuthenticationPrincipal LocalUser user,
             @RequestBody MobileOTPRequestDto requestDto) {
@@ -92,7 +95,7 @@ public class UserController {
      * @param address   The updated address object.
      * @return The saved address object.
      */
-    @PatchMapping("/{userId}/address/{addressId}")
+    @PatchMapping(PATCH_ADDRESS)
     public ResponseEntity<Address> patchAddress(
             @AuthenticationPrincipal LocalUser user, @PathVariable Long userId,
             @PathVariable Long addressId, @RequestBody Address address) {

@@ -19,6 +19,8 @@ import java.util.Optional;
 @Service
 public class OrderService {
 
+    public static final String CONTACT_NOT_FOUND = "Please update your profile details with an contact Number and verify OTP to proceed.";
+    public static final String ADDRESS_NOT_FOUND = "Please update your details with an address to place an order.";
     private final WebOrderDAO webOrderDAO;
 
     private final AddressDAO addressDAO;
@@ -48,7 +50,7 @@ public class OrderService {
     public WebOrder createOrder(LocalUser user) {
 
         if (user.getPhoneNumber() == null || user.getPhoneNumber().isEmpty() || !user.getPhoneNumberVerified()) {
-            throw new ContactNotFoundException("Please update your profile details with an contact Number and verify OTP to proceed.");
+            throw new ContactNotFoundException(CONTACT_NOT_FOUND);
         }
         List<Address> addressOptional = addressDAO.findByUser_Id(user.getId());
 
@@ -58,7 +60,7 @@ public class OrderService {
             order.setAddress(addressOptional.get(0));
             return order;
         } else {
-            throw new AddressNotFoundException("Please update your details with an address to place an order.");
+            throw new AddressNotFoundException(ADDRESS_NOT_FOUND);
         }
 
     }

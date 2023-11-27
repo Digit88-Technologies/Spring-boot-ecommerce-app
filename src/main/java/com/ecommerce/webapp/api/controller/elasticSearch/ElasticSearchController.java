@@ -1,7 +1,5 @@
 package com.ecommerce.webapp.api.controller.elasticSearch;
 
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.ecommerce.webapp.model.ProductsESIndex;
 import com.ecommerce.webapp.model.dao.ElasticSearchRepository;
 import com.ecommerce.webapp.service.ESService;
@@ -11,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

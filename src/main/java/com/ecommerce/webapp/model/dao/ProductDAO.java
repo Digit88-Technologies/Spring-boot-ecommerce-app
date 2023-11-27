@@ -13,14 +13,17 @@ import java.util.List;
  */
 public interface ProductDAO extends JpaRepository<Product, Long> {
 
+    String DISTINCT_PRODUCTS_QUERY = "SELECT DISTINCT p.category.categoryName FROM Product p";
+    String PRODUCTS_BY_ID_QUERY = "select distinct p from Product p where p.id = :id";
+
     List<Product> findByCategoryCategoryName(String categoryName);
 
     List<Product> findByNameContainingIgnoreCase(String keyword);
 
-    @Query("SELECT DISTINCT p.category.categoryName FROM Product p")
+    @Query(DISTINCT_PRODUCTS_QUERY)
     List<String> findAllCategories();
 
-    @Query("select distinct p from Product p where p.id = :id")
+    @Query(PRODUCTS_BY_ID_QUERY)
     List<Product> findDistinctById(@Param("id") Long id);
 
 

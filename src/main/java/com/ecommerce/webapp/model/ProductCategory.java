@@ -10,8 +10,6 @@ public class ProductCategory {
 
     private String categoryName;
 
-    // Getters and setters
-
     public Long getId() {
         return id;
     }

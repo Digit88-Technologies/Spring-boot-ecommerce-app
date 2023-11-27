@@ -5,7 +5,6 @@ public class ProductDTO {
     private String productName;
     private String shortDescription;
     private Double price;
-    // Getters and setters
 
     public Long getId() {
         return id;

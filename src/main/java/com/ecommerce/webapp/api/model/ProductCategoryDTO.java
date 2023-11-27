@@ -3,7 +3,6 @@ package com.ecommerce.webapp.api.model;
 public class ProductCategoryDTO {
     private Long id;
     private String categoryName;
-    // Getters and setters
 
     public Long getId() {
         return id;

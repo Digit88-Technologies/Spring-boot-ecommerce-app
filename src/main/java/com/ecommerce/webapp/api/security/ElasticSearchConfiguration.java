@@ -12,10 +12,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ElasticSearchConfiguration
 {
+
+    public static final String LOCALHOST = "localhost";
+
     @Bean
     public RestClient getRestClient() {
         RestClient restClient = RestClient.builder(
-                new HttpHost("localhost", 9200)).build();
+                new HttpHost(LOCALHOST, 9200)).build();
         return restClient;
     }
 

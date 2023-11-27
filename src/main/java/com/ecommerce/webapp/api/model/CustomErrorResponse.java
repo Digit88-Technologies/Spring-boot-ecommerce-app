@@ -2,6 +2,9 @@ package com.ecommerce.webapp.api.model;
 
 import java.time.LocalDateTime;
 
+/**
+ * Class For Custom Error Response
+ */
 public class CustomErrorResponse {
     private int statusCode;
     private String message;
@@ -12,8 +15,6 @@ public class CustomErrorResponse {
         this.message = message;
         this.timestamp = timestamp;
     }
-
-    // getters and setters
 
     public int getStatusCode() {
         return statusCode;

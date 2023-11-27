@@ -4,8 +4,6 @@ public class OrderItem {
     private Long productId;
     private Integer quantity;
 
-    // Getters and setters
-
     public Long getProductId() {
         return productId;
     }

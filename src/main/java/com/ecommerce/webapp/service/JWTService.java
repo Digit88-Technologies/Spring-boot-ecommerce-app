@@ -19,6 +19,7 @@ import java.util.Map;
 @Service
 public class JWTService {
 
+    public static final String USER_INFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
     /**
      * The secret key to encrypt the JWTs with.
      */
@@ -141,7 +142,7 @@ public class JWTService {
 // Make a GET request to the userinfo endpoint
         HttpEntity<Void> httpUserInfoRequest = new HttpEntity<>(userInfoHeaders);
         ResponseEntity<Map> httpUserInfoResponse = userInfoRestTemplate.exchange(
-                "https://openidconnect.googleapis.com/v1/userinfo",
+                USER_INFO_URL,
                 HttpMethod.GET,
                 httpUserInfoRequest,
                 Map.class

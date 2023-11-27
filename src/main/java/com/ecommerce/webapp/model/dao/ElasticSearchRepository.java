@@ -16,6 +16,9 @@ import java.util.Objects;
 @Repository
 public class ElasticSearchRepository {
 
+    public static final String SUCCESSFULLY_CREATED = "Document has been successfully created.";
+    public static final String SUCCESSFULLY_UPDATED = "Document has been successfully updated.";
+    public static final String ERROR_PERFORMING_OPERATION = "Error while performing the operation.";
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
@@ -30,11 +33,11 @@ public class ElasticSearchRepository {
                 .document(product)
         );
         if (response.result().name().equals("Created")) {
-            return "Document has been successfully created.";
+            return SUCCESSFULLY_CREATED;
         } else if (response.result().name().equals("Updated")) {
-            return "Document has been successfully updated.";
+            return SUCCESSFULLY_UPDATED;
         }
-        return "Error while performing the operation.";
+        return ERROR_PERFORMING_OPERATION;
     }
 
     public ProductsESIndex getDocumentById(String productId) throws IOException {
@@ -60,9 +63,9 @@ public class ElasticSearchRepository {
 
         DeleteResponse deleteResponse = elasticsearchClient.delete(request);
         if (Objects.nonNull(deleteResponse.result()) && !deleteResponse.result().name().equals("NotFound")) {
-            return "ProductsESIndex with id " + deleteResponse.id() + " has been deleted.";
+            return "Index document with id " + deleteResponse.id() + " has been deleted.";
         }
-        System.out.println("ProductsESIndex not found");
+        System.out.println("Index not found");
         return "ProductsESIndex with id " + deleteResponse.id() + " does not exist.";
 
     }

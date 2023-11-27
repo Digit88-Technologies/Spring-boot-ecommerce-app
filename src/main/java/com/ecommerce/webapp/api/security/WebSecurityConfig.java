@@ -11,6 +11,9 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 @Configuration
 public class WebSecurityConfig {
 
+    public static final String[] STRINGS = {"/product/**", "/auth/register", "/auth/login",
+            "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP", "/auth/sendOTP", "/elastic/**", "/google/**"};
+    public static final String GOOGLE_LOGIN_PATH = "/google/login";
     private JWTRequestFilter jwtRequestFilter;
 
     public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
@@ -30,8 +33,7 @@ public class WebSecurityConfig {
         http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
         http.authorizeHttpRequests()
                 // Specific exclusions or rules.
-                .requestMatchers("/product/**", "/auth/register", "/auth/login",
-                        "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP", "/auth/sendOTP", "/elastic/**","/google/**").permitAll()
+                .requestMatchers(STRINGS).permitAll()
                 .anyRequest().authenticated();
         return http.build();
     }
@@ -41,7 +43,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain googleLoginFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeRequests()
-                .requestMatchers("/google/login").permitAll()
+                .requestMatchers(GOOGLE_LOGIN_PATH).permitAll()
                 .and()
                 .csrf().disable()
                 .cors().disable()

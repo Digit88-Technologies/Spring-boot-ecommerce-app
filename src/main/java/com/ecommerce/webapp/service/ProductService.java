@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
 
+    public static final String CATEGORY_NOT_FOUND = "Could not find provided category : ";
+    public static final String PRODUCT_NOT_FOUND = "Product not found with ID: ";
     private ProductDAO productDAO;
 
 
@@ -70,7 +72,7 @@ public class ProductService {
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new CategoryNotFoundException("Could not find provided category : " + category);
+            throw new CategoryNotFoundException(CATEGORY_NOT_FOUND + category);
         }
     }
 
@@ -89,7 +91,7 @@ public class ProductService {
      */
     public Product getProductById(Long productId) {
         return productDAO.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+                .orElseThrow(() -> new RuntimeException(PRODUCT_NOT_FOUND + productId));
     }
 
 }
