@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Success</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtgD6Ln6IwFG3B96i3JavNkSuH3YTWXhzSyQ&usqp=CAU') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+      color: #2c3e50;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+      font-weight: bold;
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #34495e;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+      margin-top: 20px;
+      font-size: 1.5em;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h2>Welcome, <span th:text="${username}"></span>!</h2>
+  <p>Your login was successful. Here is your access token: <span th:text="${accessToken}"></span></p>
+</div>
+</body>
+
+</html>
