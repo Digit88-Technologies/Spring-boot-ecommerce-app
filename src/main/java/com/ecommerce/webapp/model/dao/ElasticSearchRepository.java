@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Repository
@@ -28,15 +29,15 @@ public class ElasticSearchRepository {
                 .id(product.getId())
                 .document(product)
         );
-        if(response.result().name().equals("Created")){
-            return new StringBuilder("Document has been successfully created.").toString();
-        }else if(response.result().name().equals("Updated")){
-            return new StringBuilder("Document has been successfully updated.").toString();
+        if (response.result().name().equals("Created")) {
+            return "Document has been successfully created.";
+        } else if (response.result().name().equals("Updated")) {
+            return "Document has been successfully updated.";
         }
-        return new StringBuilder("Error while performing the operation.").toString();
+        return "Error while performing the operation.";
     }
 
-    public ProductsESIndex getDocumentById(String productId) throws IOException{
+    public ProductsESIndex getDocumentById(String productId) throws IOException {
         ProductsESIndex product = null;
         GetResponse<ProductsESIndex> response = elasticsearchClient.get(g -> g
                         .index(indexName)
@@ -45,13 +46,12 @@ public class ElasticSearchRepository {
         );
 
         if (response.found()) {
-             product = response.source();
-            System.out.println("ProductsESIndex name " + product.getName());
+            product = response.source();
         } else {
-            System.out.println ("ProductsESIndex not found");
+            throw new NoSuchElementException();
         }
 
-       return product;
+        return product;
     }
 
     public String deleteDocumentById(String productId) throws IOException {
@@ -60,22 +60,21 @@ public class ElasticSearchRepository {
 
         DeleteResponse deleteResponse = elasticsearchClient.delete(request);
         if (Objects.nonNull(deleteResponse.result()) && !deleteResponse.result().name().equals("NotFound")) {
-            return new StringBuilder("ProductsESIndex with id " + deleteResponse.id() + " has been deleted.").toString();
+            return "ProductsESIndex with id " + deleteResponse.id() + " has been deleted.";
         }
         System.out.println("ProductsESIndex not found");
-        return new StringBuilder("ProductsESIndex with id " + deleteResponse.id()+" does not exist.").toString();
+        return "ProductsESIndex with id " + deleteResponse.id() + " does not exist.";
 
     }
 
-    public  List<ProductsESIndex> searchAllDocuments() throws IOException {
+    public List<ProductsESIndex> searchAllDocuments() throws IOException {
 
-        SearchRequest searchRequest =  SearchRequest.of(s -> s.index(indexName));
-        SearchResponse searchResponse =  elasticsearchClient.search(searchRequest, ProductsESIndex.class);
+        SearchRequest searchRequest = SearchRequest.of(s -> s.index(indexName));
+        SearchResponse searchResponse = elasticsearchClient.search(searchRequest, ProductsESIndex.class);
         List<Hit> hits = searchResponse.hits().hits();
         List<ProductsESIndex> products = new ArrayList<>();
-        for(Hit object : hits){
+        for (Hit object : hits) {
 
-            System.out.print(((ProductsESIndex) object.source()));
             products.add((ProductsESIndex) object.source());
 
         }

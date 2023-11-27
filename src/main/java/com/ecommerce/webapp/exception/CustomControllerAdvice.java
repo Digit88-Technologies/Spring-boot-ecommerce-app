@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Locale;
 
@@ -25,6 +26,16 @@ public class CustomControllerAdvice extends ResponseEntityExceptionHandler {
     public CustomControllerAdvice(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
+
+
+    @ExceptionHandler(IOException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleIOException(IOException ex) {
+        CustomErrorResponse errorResponse = new CustomErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error while processing your request!", LocalDateTime.now());
+        logError(ex);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     @ResponseBody
