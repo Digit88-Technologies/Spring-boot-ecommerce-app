@@ -1,6 +1,8 @@
 package com.ecommerce.webapp.exception;
 
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.ecommerce.webapp.api.model.CustomErrorResponse;
+import jakarta.validation.constraints.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -80,6 +82,24 @@ public class CustomControllerAdvice extends ResponseEntityExceptionHandler {
         CustomErrorResponse errorResponse = new CustomErrorResponse(HttpStatus.CONFLICT.value(), "Provided User Is Not Verified! Please Verify The User Using Mobile And Email.", LocalDateTime.now());
         logError(ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleNullPointerException(NullPointerException ex)
+    {
+        CustomErrorResponse errorResponse = new CustomErrorResponse(HttpStatus.NOT_FOUND.value(), "No Valid Data Available Against User!", LocalDateTime.now());
+        logError(ex);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(JWTDecodeException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleJWTDecodeException(JWTDecodeException ex)
+    {
+        CustomErrorResponse errorResponse = new CustomErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error Occurred while decoding JWT Token", LocalDateTime.now());
+        logError(ex);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
