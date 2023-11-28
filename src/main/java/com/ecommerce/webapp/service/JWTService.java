@@ -3,12 +3,14 @@ package com.ecommerce.webapp.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.ecommerce.webapp.exception.IllegalProviderArgumentException;
 import com.ecommerce.webapp.model.LocalUser;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Date;
 import java.util.Map;
@@ -19,7 +21,11 @@ import java.util.Map;
 @Service
 public class JWTService {
 
-    public static final String USER_INFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
+    public static final String GOOGLE_USER_INFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
+
+    public static final String FACEBOOK_USER_INFO_URL = "https://graph.facebook.com/me";
+    public static final String FIELDS_VALUE = "id,email,name,first_name,last_name";
+    public static final String FIELDS = "fields";
     /**
      * The secret key to encrypt the JWTs with.
      */
@@ -113,45 +119,69 @@ public class JWTService {
      * @param token The JWT to decode.
      * @return The username stored inside.
      */
-    public String getUsername(String token) {
+    public String getUsername(String token, String providername) {
 
-        //XYZ
         try {
             return getUsernameFromToken(token);
         } catch (Exception e) {
 
-            return getAlternativeUsername(token);
+            return getAlternativeUsername(token, providername);
         }
     }
 
+    /**
+     * Retrieves the username from a JWT (JSON Web Token).
+     *
+     * @param token The JWT from which the username will be extracted.
+     * @return The username extracted from the JWT.
+     */
     private String getUsernameFromToken(String token) {
         DecodedJWT jwt = JWT.require(algorithm).withIssuer(issuer).build().verify(token);
         return jwt.getClaim(USERNAME_KEY).asString();
     }
 
-    private String getAlternativeUsername(String token) {
-
-        //Fetching User details from google and storing the user information in the database
+    /**
+     * Retrieves an alternative username or user information from a specified identity provider (Google or Facebook).
+     *
+     * @param token    The access token obtained from the identity provider.
+     * @param provider The identity provider (either "google" or "facebook").
+     * @return The username or user information obtained from the identity provider.
+     * @throws IllegalArgumentException If an unsupported identity provider is provided.
+     */
+    private String getAlternativeUsername(String token, String provider) throws IllegalProviderArgumentException {
         RestTemplate userInfoRestTemplate = new RestTemplate();
         HttpHeaders userInfoHeaders = new HttpHeaders();
 
-// Set the Authorization header with the access token
         userInfoHeaders.setBearerAuth(token);
         userInfoHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-// Make a GET request to the userinfo endpoint
-        HttpEntity<Void> httpUserInfoRequest = new HttpEntity<>(userInfoHeaders);
-        ResponseEntity<Map> httpUserInfoResponse = userInfoRestTemplate.exchange(
-                USER_INFO_URL,
-                HttpMethod.GET,
-                httpUserInfoRequest,
-                Map.class
-        );
+        ResponseEntity<Map> httpUserInfoResponse;
 
-// Extract user details from the response
+        if ("google".equalsIgnoreCase(provider)) {
+            httpUserInfoResponse = userInfoRestTemplate.exchange(
+                    GOOGLE_USER_INFO_URL,
+                    HttpMethod.GET,
+                    new HttpEntity<>(userInfoHeaders),
+                    Map.class
+            );
+        } else if ("facebook".equalsIgnoreCase(provider)) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(FACEBOOK_USER_INFO_URL)
+                    .queryParam(FIELDS, FIELDS_VALUE);
+
+            httpUserInfoResponse = userInfoRestTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    new HttpEntity<>(userInfoHeaders),
+                    Map.class
+            );
+        } else {
+            throw new IllegalProviderArgumentException("Unsupported identity provider", provider);
+        }
+
         Map<String, Object> userDetails = httpUserInfoResponse.getBody();
 
         return (String) userDetails.get("name");
     }
+
 
 }

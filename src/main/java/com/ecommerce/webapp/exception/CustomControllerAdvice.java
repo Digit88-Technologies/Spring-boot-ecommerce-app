@@ -28,6 +28,16 @@ public class CustomControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(IllegalProviderArgumentException.class)
+    @ResponseBody
+    public ResponseEntity<?> handleIllegalProviderArgumentException(IllegalProviderArgumentException ex) {
+        String errorMessage = "Unsupported identity provider: " + ex.getProvider();
+        CustomErrorResponse errorResponse = new CustomErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), errorMessage, LocalDateTime.now());
+        logError(ex);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(IOException.class)
     @ResponseBody
     public ResponseEntity<?> handleIOException(IOException ex) {

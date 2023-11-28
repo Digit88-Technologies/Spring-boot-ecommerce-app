@@ -12,8 +12,9 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 public class WebSecurityConfig {
 
     public static final String[] STRINGS = {"/product/**", "/auth/register", "/auth/login",
-            "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP", "/auth/sendOTP", "/elastic/**", "/google/**"};
+            "/auth/verify", "/auth/forgot", "/auth/reset", "/auth/validateOTP", "/auth/sendOTP", "/elastic/**", "/google/**", "/facebook/**"};
     public static final String GOOGLE_LOGIN_PATH = "/google/login";
+    public static final String FB_LOGIN_PATH = "/facebook/login";
     private JWTRequestFilter jwtRequestFilter;
 
     public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
@@ -44,6 +45,22 @@ public class WebSecurityConfig {
         return http
                 .authorizeRequests()
                 .requestMatchers(GOOGLE_LOGIN_PATH).permitAll()
+                .and()
+                .csrf().disable()
+                .cors().disable()
+                .formLogin().disable()
+                .httpBasic().disable()
+                .build();
+
+
+    }
+
+    @Order(2) // Ensure this configuration is applied before the general configuration
+    @Bean
+    public SecurityFilterChain facebookLoginFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeRequests()
+                .requestMatchers(FB_LOGIN_PATH).permitAll()
                 .and()
                 .csrf().disable()
                 .cors().disable()

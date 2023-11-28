@@ -31,6 +31,7 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
     public static final String AUTHORIZATION = "Authorization";
     public static final String BEARER_ = "Bearer ";
     public static final String CONTEXT_IS_NULL = "Security Context is null";
+    public static final String PROVIDER = "Provider";
     private JWTService jwtService;
     private LocalUserDAO localUserDAO;
 
@@ -43,7 +44,8 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String tokenHeader = request.getHeader(AUTHORIZATION);
-        UsernamePasswordAuthenticationToken token = checkToken(tokenHeader);
+        String providerName = request.getHeader(PROVIDER);
+        UsernamePasswordAuthenticationToken token = checkToken(tokenHeader, providerName);
         if (token != null) {
             token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         }
@@ -57,11 +59,11 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
      * @param token The token to test.
      * @return The Authentication object if set.
      */
-    private UsernamePasswordAuthenticationToken checkToken(String token) {
+    private UsernamePasswordAuthenticationToken checkToken(String token, String providerName) {
         if (token != null && token.startsWith(BEARER_)) {
             token = token.substring(7);
             try {
-                String username = jwtService.getUsername(token);
+                String username = jwtService.getUsername(token, providerName);
                 Optional<LocalUser> opUser = localUserDAO.findByUsernameIgnoreCase(username);
                 if (opUser.isPresent()) {
                     LocalUser user = opUser.get();
