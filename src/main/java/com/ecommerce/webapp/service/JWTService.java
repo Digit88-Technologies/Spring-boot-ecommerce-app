@@ -23,9 +23,12 @@ public class JWTService {
 
     public static final String GOOGLE_USER_INFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 
+    public static final String GOOGLE_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v1/tokeninfo";
     public static final String FACEBOOK_USER_INFO_URL = "https://graph.facebook.com/me";
     public static final String FIELDS_VALUE = "id,email,name,first_name,last_name";
     public static final String FIELDS = "fields";
+    public static final String FACEBOOK_TOKEN_INFO_URL = "https://graph.facebook.com/v13.0/debug_token";
+    public static final String FACEBOOK_TOKEN_INFO_QUERY = "366101749211173|8885834671f187560b82e2c0f5244b76";
     /**
      * The secret key to encrypt the JWTs with.
      */
@@ -149,6 +152,11 @@ public class JWTService {
      * @throws IllegalArgumentException If an unsupported identity provider is provided.
      */
     private String getAlternativeUsername(String token, String provider) throws IllegalProviderArgumentException {
+
+        if (!isTokenValid(token, provider)) {
+            throw new IllegalProviderArgumentException("Invalid or expired token", provider);
+        }
+
         RestTemplate userInfoRestTemplate = new RestTemplate();
         HttpHeaders userInfoHeaders = new HttpHeaders();
 
@@ -181,6 +189,52 @@ public class JWTService {
         Map<String, Object> userDetails = httpUserInfoResponse.getBody();
 
         return (String) userDetails.get("name");
+    }
+
+    private boolean isTokenValid(String token, String provider) {
+        try {
+
+            RestTemplate tokenInfoRestTemplate = new RestTemplate();
+            HttpHeaders tokenInfoHeaders = new HttpHeaders();
+
+            tokenInfoHeaders.setBearerAuth(token);
+            tokenInfoHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+            ResponseEntity<Map> httpTokenInfoResponse = null;
+
+            if ("google".equalsIgnoreCase(provider)) {
+                httpTokenInfoResponse = tokenInfoRestTemplate.exchange(
+                        GOOGLE_TOKEN_INFO_URL,
+                        HttpMethod.POST,
+                        new HttpEntity<>(tokenInfoHeaders),
+                        Map.class
+                );
+                Map<String, Object> tokenInfo = httpTokenInfoResponse.getBody();
+
+                return tokenInfo != null && !tokenInfo.containsKey("error");
+            } else if ("facebook".equalsIgnoreCase(provider)) {
+                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(FACEBOOK_TOKEN_INFO_URL)
+                        .queryParam("input_token", token)
+                        .queryParam("access_token", FACEBOOK_TOKEN_INFO_QUERY);
+
+                httpTokenInfoResponse = new RestTemplate().exchange(
+                        uriBuilder.toUriString(),
+                        HttpMethod.GET,
+                        null,
+                        Map.class
+                );
+
+                Map<String, Object> tokenInfo = httpTokenInfoResponse.getBody();
+                if (tokenInfo != null && tokenInfo.containsKey("data")) {
+                    Map<String, Object> data = (Map<String, Object>) tokenInfo.get("data");
+                    return data.containsKey("is_valid") && (boolean) data.get("is_valid");
+                }
+
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Something is Wrong With Token!");
+        }
+        return false;
     }
 
 
