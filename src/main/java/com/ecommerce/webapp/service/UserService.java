@@ -11,6 +11,7 @@ import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.*;
 /**
  * Service for handling user actions.
  */
+@Slf4j
 @Service
 public class UserService {
 
@@ -68,10 +70,13 @@ public class UserService {
         user.setUsername(registrationBody.getUsername());
         user.setFirstName(registrationBody.getFirstName());
         user.setLastName(registrationBody.getLastName());
+        if (registrationBody.getPhoneNumber() != null && !registrationBody.getPhoneNumber().isEmpty()) {
+            user.setPhoneNumber(registrationBody.getPhoneNumber());
+        }
         user.setPassword(encryptionService.encryptPassword(registrationBody.getPassword()));
         VerificationToken verificationToken = createVerificationToken(user);
 
-        //Sending the registration email to the local user for verification
+        log.info("Sending the registration email to the local user for verification");
         emailService.sendVerificationEmail(verificationToken);
 
 
@@ -108,6 +113,8 @@ public class UserService {
                 if (user.isEmailVerified() && user.isPhoneNumberVerified()) {
                     return jwtService.generateJWT(user);
                 } else if (!user.isEmailVerified()) {
+
+                    log.warn("Email is not verified for user " + user.getUsername() + ", re-sending verification email to the user's registered email." );
                     List<VerificationToken> verificationTokens = user.getVerificationTokens();
                     boolean resend = verificationTokens.size() == 0 ||
                             verificationTokens.get(0).getCreatedTimestamp().before(new Timestamp(System.currentTimeMillis() - (60 * 60 * 1000)));
@@ -119,7 +126,7 @@ public class UserService {
                     throw new UserNotVerifiedException(USER_NOT_VERIFIED);
                 } else {
 
-                    //Re-sending OTP for pending verification
+                    log.info("Contact is not verified for user " + user.getUsername() + ", re-sending OTP to the user's registered Mobile.");
                     MobileOTPRequestDto mobileRegistrationRequestDto = new MobileOTPRequestDto();
                     mobileRegistrationRequestDto.setUserName(user.getUsername());
                     mobileRegistrationRequestDto.setPhoneNumber(user.getPhoneNumber());
@@ -148,7 +155,7 @@ public class UserService {
                 localUserDAO.save(user);
                 verificationTokenDAO.deleteByUser(user);
 
-                //Sending the welcome email to the local user post registration
+                log.info("Sending the welcome email to the local user post registration.");
                 emailService.sendWelcomeEmail(user);
                 return true;
             }
@@ -170,6 +177,7 @@ public class UserService {
             String token = jwtService.generatePasswordResetJWT(user);
             emailService.sendPasswordResetEmail(user, token);
         } else {
+            log.error("Failed to send reset email.");
             throw new EmailNotFoundException(EMAIL_DOES_NOT_EXIST);
         }
     }

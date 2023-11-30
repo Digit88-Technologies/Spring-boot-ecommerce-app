@@ -6,6 +6,7 @@ import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.dao.AddressDAO;
 import com.ecommerce.webapp.model.dao.LocalUserDAO;
 import com.ecommerce.webapp.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -42,9 +44,12 @@ public class UserController {
     @GetMapping("/{userId}/address")
     public ResponseEntity<List<Address>> getAddress(
             @AuthenticationPrincipal LocalUser user, @PathVariable Long userId) {
+
         if (!userService.userHasPermissionToUser(user, userId)) {
+            log.info("User does not have permission!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        log.info("Fetching addresses for current user");
         return ResponseEntity.ok(addressDAO.findByUser_Id(userId));
     }
 
@@ -61,6 +66,7 @@ public class UserController {
             @AuthenticationPrincipal LocalUser user, @PathVariable Long userId,
             @RequestBody Address address) {
         if (!userService.userHasPermissionToUser(user, userId)) {
+            log.info("User does not have permission!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         address.setId(null);
@@ -69,6 +75,7 @@ public class UserController {
         address.setUser(refUser);
         Address savedAddress = addressDAO.save(address);
 
+        log.info("Address saved successfully for user " + user.getUsername());
         return ResponseEntity.ok(savedAddress);
     }
 
@@ -77,12 +84,14 @@ public class UserController {
             @AuthenticationPrincipal LocalUser user,
             @RequestBody MobileOTPRequestDto requestDto) {
         if (!userService.userHasPermissionToUserByUserName(user, requestDto.getUserName())) {
+            log.info("User does not have permission!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         user.setPhoneNumber(requestDto.getPhoneNumber());
         LocalUser savedUser = localUserDAO.save(user);
 
+        log.info("Contact saved successfully for user " + user.getUsername());
         return ResponseEntity.ok(savedUser);
     }
 
@@ -100,6 +109,7 @@ public class UserController {
             @AuthenticationPrincipal LocalUser user, @PathVariable Long userId,
             @PathVariable Long addressId, @RequestBody Address address) {
         if (!userService.userHasPermissionToUser(user, userId)) {
+            log.info("User does not have permission!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         if (address.getId() == addressId) {
@@ -109,6 +119,7 @@ public class UserController {
                 if (originalUser.getId() == userId) {
                     address.setUser(originalUser);
                     Address savedAddress = addressDAO.save(address);
+                    log.info("Address updated successfully : " + savedAddress);
                     return ResponseEntity.ok(savedAddress);
                 }
             }

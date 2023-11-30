@@ -5,6 +5,7 @@ import com.ecommerce.webapp.exception.UserAlreadyExistsException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.dao.LocalUserDAO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class GoogleAuthService {
 
@@ -31,7 +33,6 @@ public class GoogleAuthService {
     public static final String REDIRECT_URL = "http://localhost:8082/login/oauth2/code/google";
     public static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
     public static final String ACCESS_TOKEN = "access_token";
-    public static final String REFRESH_TOKEN = "refresh_token";
     public static final String USER_INFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
     public static final String USER_EXISTS_IN_THE_DATABASE = "User Exists in the database";
     public static final String NAME = "name";
@@ -62,7 +63,7 @@ public class GoogleAuthService {
 
     public ModelAndView handleGoogleCallback(String authorizationCode, HttpServletRequest request) {
 
-        System.out.println("Authorization Code: " + authorizationCode);
+        log.info("Handling Google auth request and extracting token using authorization code");
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
@@ -84,14 +85,14 @@ public class GoogleAuthService {
 
         String accessToken = (String) responseBody.get(ACCESS_TOKEN);
 
-        //Fetching User details from google and storing the user information in the database
+        log.info("Fetching user information against token received");
+
         RestTemplate userInfoRestTemplate = new RestTemplate();
         HttpHeaders userInfoHeaders = new HttpHeaders();
 
-            userInfoHeaders.setBearerAuth(accessToken);
+        userInfoHeaders.setBearerAuth(accessToken);
         userInfoHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        // Making a GET request to the userinfo endpoint
         HttpEntity<Void> httpUserInfoRequest = new HttpEntity<>(userInfoHeaders);
         ResponseEntity<Map> httpUserInfoResponse = userInfoRestTemplate.exchange(
                 USER_INFO_URL,
@@ -100,15 +101,16 @@ public class GoogleAuthService {
                 Map.class
         );
 
-        // Extract user details from the response
         Map<String, Object> userDetails = httpUserInfoResponse.getBody();
 
-        System.out.println("User Details: " + userDetails);
+        log.info("Verifying auth user against database...");
 
         if (localUserDAO.findByEmailIgnoreCase((String) userDetails.get("email")).isPresent()
                 || localUserDAO.findByUsernameIgnoreCase((String) userDetails.get("name")).isPresent()) {
             throw new UserAlreadyExistsException(USER_EXISTS_IN_THE_DATABASE);
         } else {
+
+            log.info("Creating a new user into the system");
 
             LocalUser googleUserAsLocalUser = new LocalUser();
             googleUserAsLocalUser.setUsername((String) userDetails.get(NAME));
@@ -119,7 +121,7 @@ public class GoogleAuthService {
 
             localUserDAO.save(googleUserAsLocalUser);
         }
-        // Redirecting to the home page
+
         ModelAndView modelAndView = new ModelAndView("Welcome");
         modelAndView.addObject("accessToken", accessToken);
         modelAndView.addObject("userName", (String) userDetails.get("name"));

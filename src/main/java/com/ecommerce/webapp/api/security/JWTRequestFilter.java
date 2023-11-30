@@ -8,6 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,7 @@ import java.util.Optional;
  * Filter for decoding a JWT in the Authorization header and loading the user
  * object into the authentication context.
  */
+@Slf4j
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInterceptor {
 
@@ -78,7 +80,7 @@ public class JWTRequestFilter extends OncePerRequestFilter implements ChannelInt
         }
 
         SecurityContextHolder.getContext().setAuthentication(null);
-        System.out.println(CONTEXT_IS_NULL);
+        log.warn(CONTEXT_IS_NULL);
         return null;
     }
 

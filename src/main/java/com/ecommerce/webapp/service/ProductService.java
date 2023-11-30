@@ -7,6 +7,7 @@ import com.ecommerce.webapp.model.Product;
 import com.ecommerce.webapp.model.ProductCategory;
 import com.ecommerce.webapp.model.dao.ProductCategoryRepository;
 import com.ecommerce.webapp.model.dao.ProductDAO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Service for handling product actions.
  */
+@Slf4j
 @Service
 public class ProductService {
 
@@ -42,6 +44,7 @@ public class ProductService {
      * @return The list of products.
      */
     public List<Product> getProducts() {
+
         return productDAO.findAll();
     }
 

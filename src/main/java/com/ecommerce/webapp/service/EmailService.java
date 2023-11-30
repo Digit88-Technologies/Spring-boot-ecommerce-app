@@ -5,6 +5,7 @@ import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.VerificationToken;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * Service for handling emails being sent.
  */
+@Slf4j
 @Service
 public class EmailService {
 
@@ -88,8 +90,9 @@ public class EmailService {
 
         try {
             javaMailSender.send(message);
-            System.out.println("Email has been sent");
+            log.info("Verification Email has been sent");
         } catch (MailException ex) {
+            log.error("Error sending verification email");
             throw new EmailFailureException(ERROR_SENDING_REGISTRATION_EMAIL, verificationToken.getUser().getUsername(), ex);
         }
     }
@@ -125,8 +128,9 @@ public class EmailService {
 
         try {
             javaMailSender.send(message);
-            System.out.println("Email has been sent out for successful registration");
+            log.info("Email has been sent out for successful registration");
         } catch (MailException ex) {
+            log.error("Error sending registration email");
             throw new EmailFailureException(ERROR_SENDING_WELCOME_EMAIL, user.getUsername(), ex);
         }
     }
@@ -164,8 +168,10 @@ public class EmailService {
 
         helper.setText(content, true);
         try {
+            log.info("Email sent out for password reset");
             javaMailSender.send(message);
         } catch (MailException ex) {
+            log.error("Error sending password reset email");
             throw new EmailFailureException(ERROR_SENDING_PASSWORD_RESET_EMAIL, user.getUsername(), ex);
         }
     }

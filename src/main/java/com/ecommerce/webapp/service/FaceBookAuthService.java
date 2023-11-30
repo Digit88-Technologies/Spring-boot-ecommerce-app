@@ -5,6 +5,7 @@ import com.ecommerce.webapp.exception.UserAlreadyExistsException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.dao.LocalUserDAO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class FaceBookAuthService {
 
@@ -58,6 +60,7 @@ public class FaceBookAuthService {
 
     public ModelAndView handleFacebookCallback(String authorizationCode, HttpServletRequest request) {
 
+        log.info("Handling Facebook auth request and extracting token using authorization code");
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -76,6 +79,7 @@ public class FaceBookAuthService {
 
         String accessToken = (String) responseBody.get(ACCESS_TOKEN);
 
+        log.info("Fetching user information against token received");
 
         RestTemplate userInfoRestTemplate = new RestTemplate();
         HttpHeaders userInfoHeaders = new HttpHeaders();
@@ -96,10 +100,13 @@ public class FaceBookAuthService {
 
         Map<String, Object> userDetails = httpUserInfoResponse.getBody();
 
+        log.info("Verifying auth user against database...");
         if (localUserDAO.findByEmailIgnoreCase((String) userDetails.get("email")).isPresent()
                 || localUserDAO.findByUsernameIgnoreCase((String) userDetails.get("name")).isPresent()) {
             throw new UserAlreadyExistsException(USER_EXISTS_IN_THE_DATABASE);
         } else {
+
+            log.info("Creating a new user into the system");
 
             LocalUser googleUserAsLocalUser = new LocalUser();
             googleUserAsLocalUser.setUsername((String) userDetails.get(NAME));

@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.ecommerce.webapp.model.ProductsESIndex;
 import com.ecommerce.webapp.util.ESUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+@Slf4j
 @Service
 public class ESService {
 
@@ -24,6 +26,7 @@ public class ESService {
 
     public List<String> autoSuggestProduct(String partialProductName) throws IOException {
 
+        log.info("Fetching product information from elasticsearch using text auto-suggest");
         Supplier<Query> supplier = ESUtil.createSupplierAutoSuggest(partialProductName);
         SearchResponse<ProductsESIndex> searchResponse = elasticsearchClient
                 .search(s -> s.index("products").query(supplier.get()), ProductsESIndex.class);

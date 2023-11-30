@@ -38,6 +38,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationBody registrationBody) throws MessagingException, EmailFailureException, UnsupportedEncodingException {
+        log.info("Received Request For Registering A user");
         userService.registerUser(registrationBody);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(REGISTRATION_UNDER_PROCESS);
@@ -45,28 +46,33 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody) throws UserNotVerifiedException, MessagingException, UnsupportedEncodingException {
+        log.info("Logging In Using Provided User Credentials / Mobile");
         String jwt = userService.loginUser(loginBody);
         if (jwt == null) {
-            log.warn("User login failed: {}", loginBody.getUsername());
+            log.warn("User login failed for : {}", loginBody.getUsername());
             LoginResponse response = new LoginResponse();
             response.setJwt(null);
             response.setSuccess(false);
             response.setFailureReason(USER_LOGIN_FAILED);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } else {
+            log.warn("User login was successful for : {}", loginBody.getUsername());
             LoginResponse response = new LoginResponse();
             response.setJwt(jwt);
             response.setSuccess(true);
-            response.setFailureReason("User login successful for user : " + loginBody.getUsername());
+            response.setFailureReason("User login successful!");
             return ResponseEntity.ok(response);
         }
     }
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyEmail(@RequestParam String token) throws MessagingException, UnsupportedEncodingException {
+        log.info("Verifying User Via Email");
         if (userService.verifyUser(token)) {
+            log.info("Verified User Via Email");
             return ResponseEntity.ok().body(VERIFIED_EMAIL_SUCCESSFULLY);
         } else {
+            log.info("User Verification Failed via Email!");
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(CONFLICT_ERROR_DURING_EMAIL_VERIFICATION);
         }
@@ -75,12 +81,14 @@ public class AuthenticationController {
 
     @GetMapping("/me")
     public LocalUser getLoggedInUserProfile(@AuthenticationPrincipal LocalUser user) {
+        log.info("Sharing User Details for the Current session");
         return user;
     }
 
     @PostMapping("/forgot")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) throws EmailNotFoundException, MessagingException, UnsupportedEncodingException {
 
+        log.info("Password Reset Request Received!");
         userService.forgotPassword(email);
         return ResponseEntity.ok().body(PASSWORD_RESET_EMAIL_SENT);
     }
@@ -88,6 +96,7 @@ public class AuthenticationController {
     @PostMapping("/reset")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetBody body) {
 
+        log.info("Password Reset Request Is In Process!");
         userService.resetPassword(body);
         return ResponseEntity.ok().body(PASSWORD_RESET_SUCCESSFULLY);
     }
@@ -95,7 +104,7 @@ public class AuthenticationController {
     @PostMapping("/sendOTP")
     public ResponseEntity<?> sendOTP(@Valid @RequestBody MobileOTPRequestDto dto) {
 
-        log.info("sendOTP Request: {}", dto.toString());
+        log.info("Sending OTP to Registered Mobile For Verification");
         return ResponseEntity.ok().body(userService.sendOTPToContactNumber(dto));
     }
 

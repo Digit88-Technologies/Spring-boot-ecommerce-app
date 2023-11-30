@@ -8,6 +8,7 @@ import com.ecommerce.webapp.model.WebOrderQuantities;
 import com.ecommerce.webapp.service.InventoryService;
 import com.ecommerce.webapp.service.OrderService;
 import com.ecommerce.webapp.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -42,6 +44,8 @@ public class OrderController {
     public ResponseEntity<String> placeOrder(@AuthenticationPrincipal LocalUser user,
                                              @RequestBody List<OrderItem> orderData) {
 
+        log.info("Order placement Request Received");
+
         // Create a new order for the user
         WebOrder order = orderService.createOrder(user);
 
@@ -52,6 +56,7 @@ public class OrderController {
 
             Product product = productService.getProductById(productId);
 
+            log.info("Checking the inventory for requested product");
             if (inventoryService.hasSufficientInventory(product, quantity)) {
                 inventoryService.reduceInventory(product, quantity);
 
@@ -62,11 +67,13 @@ public class OrderController {
 
                 order.getQuantities().add(orderQuantities);
             } else {
+                log.warn("Insufficient Inventory for requested product : ");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(INSUFFICIENT_INVENTORY_FOR_PRODUCT_ID + productId);
             }
         }
 
+        log.info("Creating new order");
         orderService.saveOrder(order);
 
         return ResponseEntity.ok(ORDER_PLACED_SUCCESSFULLY);
@@ -81,6 +88,8 @@ public class OrderController {
      */
     @GetMapping
     public List<WebOrder> getOrders(@AuthenticationPrincipal LocalUser user) {
+
+        log.info("Fetching all the orders for current user");
         return orderService.getOrders(user);
     }
 }

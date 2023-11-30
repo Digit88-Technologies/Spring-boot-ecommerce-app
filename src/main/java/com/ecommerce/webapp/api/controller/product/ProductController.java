@@ -4,12 +4,14 @@ import com.ecommerce.webapp.api.model.ProductDTO;
 import com.ecommerce.webapp.exception.CategoryNotFoundException;
 import com.ecommerce.webapp.model.Product;
 import com.ecommerce.webapp.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/product")
 public class ProductController {
@@ -27,6 +29,8 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<List<Product>> getProducts() {
+
+        log.info("Fetching all products from inventory");
         List<Product> products = productService.getProducts();
         return ResponseEntity.ok(products);
     }
@@ -38,6 +42,8 @@ public class ProductController {
      */
     @GetMapping("/categories")
     public ResponseEntity<List<String>> getAllCategories() {
+
+        log.info("Fetching all product categories");
         List<String> categories = productService.getAllProductCategories();
         return ResponseEntity.ok(categories);
     }
@@ -50,6 +56,8 @@ public class ProductController {
      */
     @GetMapping("/by-category")
     public ResponseEntity<List<ProductDTO>> searchProductsByCategory(@RequestParam String category) {
+
+        log.info("Fetching products as per requested category");
         List<ProductDTO> products = productService.getProductsByCategory(category);
         return ResponseEntity.ok(products);
     }
@@ -62,6 +70,8 @@ public class ProductController {
      */
     @GetMapping("/autocomplete")
     public ResponseEntity<List<String>> autocompleteProductSearch(@RequestParam String keyword) {
+
+        log.info("Fetching products as per requested keyword using text auto-suggest");
         List<String> productNames = productService.autocompleteProductSearch(keyword);
         return ResponseEntity.ok(productNames);
     }

@@ -3,6 +3,7 @@ package com.ecommerce.webapp.api.controller.elasticSearch;
 import com.ecommerce.webapp.model.ProductsESIndex;
 import com.ecommerce.webapp.model.dao.ElasticSearchRepository;
 import com.ecommerce.webapp.service.ESService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Controller class for ElasticSearch operations.
  */
+@Slf4j
 @RestController
 @RequestMapping("/elastic")
 public class ElasticSearchController {
@@ -32,6 +34,7 @@ public class ElasticSearchController {
      */
     @PostMapping("/createOrUpdateDocument")
     public ResponseEntity<Object> createOrUpdateDocument(@RequestBody ProductsESIndex product) throws IOException {
+        log.info("Creating / Updating Index Documents In ElasticSearch");
         String response = elasticSearchQuery.createOrUpdateDocument(product);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -44,6 +47,7 @@ public class ElasticSearchController {
      */
     @GetMapping("/getDocument")
     public ResponseEntity<Object> getDocumentById(@RequestParam String productId) throws IOException {
+        log.info("Getting an Index document from ElasticSearch");
         ProductsESIndex product = elasticSearchQuery.getDocumentById(productId);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
@@ -56,6 +60,7 @@ public class ElasticSearchController {
      */
     @DeleteMapping("/deleteDocument")
     public ResponseEntity<Object> deleteDocumentById(@RequestParam String productId) throws IOException {
+        log.info("Deleting Suggested Index document");
         String response = elasticSearchQuery.deleteDocumentById(productId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -67,6 +72,7 @@ public class ElasticSearchController {
      */
     @GetMapping("/searchDocument")
     public ResponseEntity<Object> searchAllDocument() throws IOException {
+        log.info("Fetching All Index Documents");
         List<ProductsESIndex> products = elasticSearchQuery.searchAllDocuments();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
@@ -79,6 +85,7 @@ public class ElasticSearchController {
      */
     @GetMapping("/autoSuggest/{partialProductName}")
     List<String> autoSuggestProductSearch(@PathVariable String partialProductName) throws IOException {
+        log.info("Fetching Products Based on Partial Product Name using text auto-suggest on ElasticSearch");
         return esService.autoSuggestProduct(partialProductName);
 
     }

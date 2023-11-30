@@ -30,6 +30,8 @@ public class GoogleLoginController {
 
     @GetMapping(GOOGLE_LOGIN)
     public String googleLogin() {
+
+        log.info("Google login Request");
         ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId("google");
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .clientId(clientRegistration.getClientId())
@@ -39,14 +41,14 @@ public class GoogleLoginController {
                 .state(AUTH_STATE_CODE)
                 .build();
 
-        log.info("Registering user using Google Login");
-
+        log.info("Redirecting to Google auth endpoint to select preferred social account further");
         return "redirect:" + authorizationRequest.getAuthorizationRequestUri();
     }
 
     @GetMapping(TOKEN_ENDPOINT)
     public ModelAndView handleGoogleCallback(@RequestParam(name = "code") String authorizationCode, HttpServletRequest request) {
 
+        log.info("Handling auth response from Google for user registration");
         return googleAuthService.handleGoogleCallback(authorizationCode, request);
 
     }
