@@ -2,6 +2,7 @@ package com.ecommerce.webapp.api.controller.socialLogin;
 
 import com.ecommerce.webapp.service.GoogleAuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+@Slf4j
 @Controller
 public class GoogleLoginController {
 
@@ -36,6 +38,8 @@ public class GoogleLoginController {
                 .scope(SCOPE)
                 .state(AUTH_STATE_CODE)
                 .build();
+
+        log.info("Registering user using Google Login");
 
         return "redirect:" + authorizationRequest.getAuthorizationRequestUri();
     }

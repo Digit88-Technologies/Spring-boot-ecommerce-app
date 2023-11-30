@@ -1,6 +1,6 @@
 package com.ecommerce.webapp.service;
 
-import com.ecommerce.webapp.api.security.TwilioConfig;
+import com.ecommerce.webapp.config.TwilioConfig;
 import com.ecommerce.webapp.exception.UserAlreadyExistsException;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.dao.LocalUserDAO;

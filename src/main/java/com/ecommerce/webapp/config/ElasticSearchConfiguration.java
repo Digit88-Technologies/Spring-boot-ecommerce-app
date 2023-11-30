@@ -1,4 +1,4 @@
-package com.ecommerce.webapp.api.security;
+package com.ecommerce.webapp.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;

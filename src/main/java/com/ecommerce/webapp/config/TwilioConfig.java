@@ -1,4 +1,4 @@
-package com.ecommerce.webapp.api.security;
+package com.ecommerce.webapp.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

@@ -1,6 +1,6 @@
 package com.ecommerce.webapp;
 
-import com.ecommerce.webapp.api.security.TwilioConfig;
+import com.ecommerce.webapp.config.TwilioConfig;
 import com.twilio.Twilio;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.ecommerce.webapp.service;
 
 import com.ecommerce.webapp.api.model.*;
-import com.ecommerce.webapp.api.security.TwilioConfig;
+import com.ecommerce.webapp.config.TwilioConfig;
 import com.ecommerce.webapp.exception.*;
 import com.ecommerce.webapp.model.LocalUser;
 import com.ecommerce.webapp.model.VerificationToken;
@@ -12,8 +12,6 @@ import com.twilio.type.PhoneNumber;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
