@@ -1,5 +1,8 @@
 package com.ecommerce.webapp.exception;
 
+import lombok.Getter;
+
+@Getter
 public class IllegalProviderArgumentException extends RuntimeException {
 
     private String provider;
@@ -9,7 +12,4 @@ public class IllegalProviderArgumentException extends RuntimeException {
         this.provider = provider;
     }
 
-    public String getProvider() {
-        return provider;
-    }
 }
